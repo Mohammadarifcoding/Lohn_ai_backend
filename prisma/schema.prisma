@@ -21,6 +21,7 @@ model user {
 
   sessions      session[]
   accounts      account[]
+  blogRuns      blogGenerationRun[]
 }
 
 model session {
@@ -61,4 +62,62 @@ model verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model blogGenerationRun {
+  id            String           @id @default(uuid())
+  requestId     String           @unique
+  userId        String?
+  topic         String
+  status        String
+  workflowStatus String?
+  error         String?
+  durationMs    Int?
+  iterationCount Int?
+  selectedDraftIndex Int?
+  finalBlog      String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  completedAt   DateTime?
+
+  user          user?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  drafts        blogDraft[]
+  evaluations   blogEvaluation[]
+}
+
+model blogDraft {
+  id                String            @id @default(uuid())
+  runId             String
+  draftIndex        Int
+  ideaIndex         Int
+  ideaTitle         String
+  mode              String
+  format            String
+  content           String
+  wordCountEstimate Int
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  run               blogGenerationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  evaluation        blogEvaluation?
+
+  @@unique([runId, draftIndex])
+}
+
+model blogEvaluation {
+  id           String    @id @default(uuid())
+  runId        String
+  draftId      String    @unique
+  draftIndex   Int
+  score        Float
+  approved     Boolean
+  issues       Json
+  improvements Json
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  run          blogGenerationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  draft        blogDraft         @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
 }

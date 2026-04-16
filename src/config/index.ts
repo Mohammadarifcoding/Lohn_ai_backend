@@ -21,6 +21,7 @@ interface Config {
   GEMINI_API_KEY: string;
   AI_GATEWAY_URL: string;
   OPENROUTER_API_KEY: string;
+  TAVILY_API_KEY: string;
   ADMIN_NAME: string;
   ADMIN_EMAIL: string;
   ADMIN_PASSWORD: string;
@@ -50,6 +51,7 @@ export const config: Config = {
   PINECONE_INDEX: getEnvVar("PINECONE_INDEX"),
   AI_GATEWAY_URL: getEnvVar("AI_GATEWAY_URL"),
   OPENROUTER_API_KEY: getEnvVar("OPENROUTER_API_KEY"),
+  TAVILY_API_KEY: getEnvVar("TAVILY_API_KEY"),
   GEMINI_API_KEY: getEnvVar("GEMINI_API_KEY"),
   ADMIN_NAME: getEnvVar("ADMIN_NAME", "Admin User"),
   ADMIN_EMAIL: getEnvVar("ADMIN_EMAIL", "admin@local.dev"),

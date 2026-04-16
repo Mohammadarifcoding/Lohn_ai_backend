@@ -1,0 +1,3 @@
+export const MAX_TAVILY_CALLS_PER_REQUEST = 8;
+export const MAX_RESULTS_PER_QUERY = 5;
+export const RESEARCH_CACHE_FRESHNESS_DAYS = 21;

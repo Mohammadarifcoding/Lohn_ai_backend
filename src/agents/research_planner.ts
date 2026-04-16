@@ -1,6 +1,4 @@
-import {
-  GraphNode,
-} from "@langchain/langgraph";
+import { GraphNode } from "@langchain/langgraph";
 import { BlogAgentStateSchema } from "../types/blog/workflow.js";
 import { models } from "../providers/models.js";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
@@ -19,7 +17,7 @@ const researchPlannerAgent: GraphNode<typeof BlogAgentStateSchema> = async (
     throw new Error("Missing requirement for research planning");
   }
 
-  const llm = models.gpt4o.withStructuredOutput(ResearchPlanSchema);
+  const llm = models.qwen.withStructuredOutput(ResearchPlanSchema);
 
   let parsed: ReturnType<typeof ResearchPlanSchema.parse> | undefined;
   let lastError: unknown;
@@ -42,7 +40,9 @@ const researchPlannerAgent: GraphNode<typeof BlogAgentStateSchema> = async (
         .map((issue) => `${issue.path.join(".") || "root"}: ${issue.message}`)
         .join("; ");
 
-      lastError = new Error(`Structured output validation failed: ${zodMessage}`);
+      lastError = new Error(
+        `Structured output validation failed: ${zodMessage}`,
+      );
       logger.warn("Research planner validation failed", {
         attempt: i + 1,
         issues: zodMessage,
@@ -51,12 +51,12 @@ const researchPlannerAgent: GraphNode<typeof BlogAgentStateSchema> = async (
       lastError = err;
       const details = normalizeProviderError(
         err,
-        config.NODE_ENV !== "production"
+        config.NODE_ENV !== "production",
       );
 
       logger.error("Research planner attempt failed", {
         attempt: i + 1,
-        model: "gpt-4o",
+        model: "qwen",
         baseURL: config.AI_GATEWAY_URL,
         error: details.message,
         status: details.status,
@@ -70,11 +70,14 @@ const researchPlannerAgent: GraphNode<typeof BlogAgentStateSchema> = async (
   }
 
   if (!parsed) {
-    const details = normalizeProviderError(lastError, config.NODE_ENV !== "production");
+    const details = normalizeProviderError(
+      lastError,
+      config.NODE_ENV !== "production",
+    );
     throw new Error(
       `Research planner failed after retries: ${
         details.status ? `[${details.status}] ` : ""
-      }${details.message}`
+      }${details.message}`,
     );
   }
 
