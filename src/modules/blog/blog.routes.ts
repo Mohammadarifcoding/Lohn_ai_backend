@@ -1,7 +1,12 @@
 import { Router, type Router as RouterType } from "express";
 import { authenticate, requireRole } from "../../middleware/authenticate.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
-import { generateBlog, getGenerateStatus } from "./blog.controller.js";
+import {
+  generateBlog,
+  getGenerateStatus,
+  polishDraft,
+  selectDraftForRun,
+} from "./blog.controller.js";
 
 const router: RouterType = Router();
 
@@ -92,6 +97,51 @@ router.get(
   authenticate,
   requireRole("admin"),
   asyncHandler(getGenerateStatus),
+);
+
+router.post(
+  "/generate/:requestId/select-draft",
+  authenticate,
+  requireRole("admin"),
+  asyncHandler(selectDraftForRun),
+);
+
+/**
+ * @swagger
+ * /api/admin/blog/polish-draft:
+ *   post:
+ *     summary: Run final language polish on provided draft content (admin only)
+ *     tags: [Admin Blog]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *             properties:
+ *               content:
+ *                 type: string
+ *               strictStructure:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Draft polish completed
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.post(
+  "/polish-draft",
+  authenticate,
+  requireRole("admin"),
+  asyncHandler(polishDraft),
 );
 
 export default router;

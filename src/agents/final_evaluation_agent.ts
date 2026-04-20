@@ -12,6 +12,46 @@ function estimateWordCount(text: string): number {
     .filter((token) => token.length > 0).length;
 }
 
+function splitFrontmatter(content: string): {
+  frontmatter: string;
+  body: string;
+} {
+  const match = content.match(/^(---\n[\s\S]+?\n---\n?)([\s\S]*)$/);
+  if (!match) {
+    return { frontmatter: "", body: content };
+  }
+
+  return {
+    frontmatter: match[1] ?? "",
+    body: match[2] ?? "",
+  };
+}
+
+function transformBodyLines(
+  content: string,
+  transform: (line: string) => string,
+): string {
+  const { frontmatter, body } = splitFrontmatter(content);
+  const transformedBody = body
+    .split("\n")
+    .map((line) => {
+      const trimmed = line.trim();
+      if (
+        trimmed.length === 0 ||
+        trimmed.startsWith("#") ||
+        trimmed.includes("|") ||
+        trimmed.startsWith("<")
+      ) {
+        return line;
+      }
+
+      return transform(line);
+    })
+    .join("\n");
+
+  return `${frontmatter}${transformedBody}`;
+}
+
 function countMatches(text: string, regex: RegExp): number {
   return (text.match(regex) ?? []).length;
 }
@@ -80,13 +120,57 @@ function evaluateDraftOnce(draft: Draft, draftIndex: number): Evaluation {
     "in conclusion",
     "delve into",
     "unlock the power",
+    "leverage",
+    "robust",
+    "seamless",
+    "synergy",
+    "paradigm",
+    "transformative",
+    "utilize",
+    "cutting-edge",
+    "state-of-the-art",
+    "game-changer",
   ];
   const lowered = content.toLowerCase();
   const aiMatches = aiPhrases.filter((phrase) => lowered.includes(phrase));
   if (aiMatches.length > 0) {
-    score -= Math.min(1.5, aiMatches.length * 0.5);
+    if (aiMatches.length > 2) {
+      score -= Math.min(1.5, (aiMatches.length - 2) * 0.4);
+    }
     issues.push("Contains AI-like generic phrasing");
     improvements.push("Replace generic phrasing with concrete, context-driven language");
+  }
+
+  const colonCount = countMatches(content, /:/g);
+  const colonPerThousandWords =
+    wordCount > 0 ? (colonCount / wordCount) * 1000 : colonCount;
+  if (colonPerThousandWords > 4) {
+    score -= Math.min(0.8, (colonPerThousandWords - 4) * 0.2);
+    issues.push("Colon usage is too frequent for balanced readability");
+    improvements.push("Reduce colon-heavy sentence joins and prefer direct sentences");
+  }
+
+  const hyphenSeparatorCount = countMatches(content, /\s-\s/g);
+  const hyphenPerThousandWords =
+    wordCount > 0
+      ? (hyphenSeparatorCount / wordCount) * 1000
+      : hyphenSeparatorCount;
+  if (hyphenPerThousandWords > 3) {
+    score -= Math.min(0.8, (hyphenPerThousandWords - 3) * 0.2);
+    issues.push("Mid-sentence hyphen separator is overused");
+    improvements.push("Use commas or shorter sentences instead of repeated ' - ' separators");
+  }
+
+  const openingParagraph = content
+    .split(/\n\s*\n/)
+    .find((paragraph) => paragraph.trim().length > 0)
+    ?.trim()
+    .toLowerCase() ?? "";
+  const templatedOpeners = ["picture this:", "imagine this:", "let's dive in", "lets dive in"];
+  if (templatedOpeners.some((opener) => openingParagraph.startsWith(opener))) {
+    score -= 0.6;
+    issues.push("Uses repetitive templated opening phrase");
+    improvements.push("Start with a context-specific opening instead of stock hook phrases");
   }
 
   score = Math.max(0, Number(score.toFixed(1)));
@@ -118,7 +202,29 @@ function applySingleRefinement(draft: Draft, evaluation: Evaluation): Draft {
       .replace(/It is important to note/gi, "A practical point")
       .replace(/In conclusion/gi, "To wrap up")
       .replace(/delve into/gi, "look at")
-      .replace(/unlock the power/gi, "use");
+      .replace(/unlock the power/gi, "use")
+      .replace(/\bleverage\b/gi, "use")
+      .replace(/\butilize\b/gi, "use")
+      .replace(/\brobust\b/gi, "reliable")
+      .replace(/\bseamless\b/gi, "simple")
+      .replace(/\btransformative\b/gi, "high-impact")
+      .replace(/\bsynergy\b/gi, "coordination")
+      .replace(/\bparadigm\b/gi, "approach")
+      .replace(/\bcutting-edge\b/gi, "modern")
+      .replace(/\bstate-of-the-art\b/gi, "advanced")
+      .replace(/\bgame-changer\b/gi, "important improvement");
+  }
+
+  if (
+    evaluation.issues.some((issue) =>
+      issue.includes("repetitive templated opening phrase"),
+    )
+  ) {
+    refined = refined
+      .replace(/^Picture this:\s*/i, "")
+      .replace(/^Imagine this:\s*/i, "")
+      .replace(/^Let's dive in\.?\s*/i, "")
+      .replace(/^Lets dive in\.?\s*/i, "");
   }
 
   if (evaluation.issues.some((issue) => issue.includes("outdated year references"))) {
@@ -127,6 +233,22 @@ function applySingleRefinement(draft: Draft, evaluation: Evaluation): Draft {
 
   if (evaluation.issues.some((issue) => issue.includes("typography dashes"))) {
     refined = refined.replace(/[–—]/g, "-");
+  }
+
+  if (
+    evaluation.issues.some((issue) =>
+      issue.includes("Colon usage is too frequent"),
+    )
+  ) {
+    refined = transformBodyLines(refined, (line) => line.replace(/:\s+/g, ". "));
+  }
+
+  if (
+    evaluation.issues.some((issue) =>
+      issue.includes("Mid-sentence hyphen separator is overused"),
+    )
+  ) {
+    refined = transformBodyLines(refined, (line) => line.replace(/\s-\s/g, ", "));
   }
 
   return {

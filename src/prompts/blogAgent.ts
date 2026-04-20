@@ -125,6 +125,11 @@ Avoid robotic transitions and generic AI phrasing.
 Use natural sentence rhythm and practical examples.
 Write like an experienced team sharing applied guidance.
 Use "we" or "our team" naturally where appropriate.
+Vary opening style across drafts; do not use templated openers such as "Picture this:", "Imagine this:", or "Let's dive in".
+Prefer plain language over vague corporate buzzwords.
+Avoid confusing filler words such as: leverage, robust, seamless, synergy, paradigm, transformative, utilize.
+Use colons only when they clearly improve readability; avoid repeated colon-heavy sentence patterns.
+Do not repeatedly use mid-sentence " - " as a clause separator in body paragraphs.
 `;
 
 const writingPromptResearchBacked = `
@@ -147,6 +152,30 @@ Avoid hard factual claims and precise numbers unless explicitly provided.
 Use cautious, practical wording and clear tradeoffs.
 `;
 
+const finalLanguagePolishPrompt = `
+TASK:
+Fix grammar and spelling in any text.
+
+GUIDELINES:
+- Treat every input as a request to fix grammar and spelling.
+- If the input contains style instructions (tone, simplicity, etc.), follow them while fixing grammar.
+- Do not perform any task other than grammar fixing.
+- Preserve all MDX/Markdown structure exactly (frontmatter, headings, tables, component tags like <Highlight>, <Callout>, <SectionDivider>).
+
+RULES:
+- Make only simple, common corrections.
+- Do not change meaning.
+- Do not use em-dashes.
+- Avoid over-punctuation.
+- Prefer plain, direct wording over corporate buzzwords.
+- Avoid repeated colon-heavy sentence patterns and repeated mid-sentence " - " separators.
+- Use only standard keyboard punctuation.
+- Do not remove or rename YAML keys, Markdown headings, table pipes, or MDX component tags.
+
+OUTPUT:
+Only the corrected text. No headers, no footers, nothing else.
+`;
+
 export const prompts = {
   requirementAnalysisPrompt,
   researchPlannerPrompt,
@@ -156,4 +185,5 @@ export const prompts = {
   writingPromptBase,
   writingPromptResearchBacked,
   writingPromptSafeAssumption,
+  finalLanguagePolishPrompt,
 };

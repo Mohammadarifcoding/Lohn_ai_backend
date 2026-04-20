@@ -99,13 +99,57 @@ function evaluateDraft(draft: Draft, draftIndex: number): Evaluation {
     "in conclusion",
     "delve into",
     "unlock the power",
+    "leverage",
+    "robust",
+    "seamless",
+    "synergy",
+    "paradigm",
+    "transformative",
+    "utilize",
+    "cutting-edge",
+    "state-of-the-art",
+    "game-changer",
   ];
   const lowered = content.toLowerCase();
   const aiMatches = aiPhrases.filter((phrase) => lowered.includes(phrase));
   if (aiMatches.length > 0) {
-    score -= Math.min(1.5, aiMatches.length * 0.5);
+    if (aiMatches.length > 2) {
+      score -= Math.min(1.5, (aiMatches.length - 2) * 0.4);
+    }
     issues.push("Contains AI-like generic phrasing");
     improvements.push("Replace generic phrasing with concrete, context-driven language");
+  }
+
+  const colonCount = countMatches(content, /:/g);
+  const colonPerThousandWords =
+    wordCount > 0 ? (colonCount / wordCount) * 1000 : colonCount;
+  if (colonPerThousandWords > 4) {
+    score -= Math.min(0.8, (colonPerThousandWords - 4) * 0.2);
+    issues.push("Colon usage is too frequent for balanced readability");
+    improvements.push("Reduce colon-heavy sentence joins and prefer direct sentences");
+  }
+
+  const hyphenSeparatorCount = countMatches(content, /\s-\s/g);
+  const hyphenPerThousandWords =
+    wordCount > 0
+      ? (hyphenSeparatorCount / wordCount) * 1000
+      : hyphenSeparatorCount;
+  if (hyphenPerThousandWords > 3) {
+    score -= Math.min(0.8, (hyphenPerThousandWords - 3) * 0.2);
+    issues.push("Mid-sentence hyphen separator is overused");
+    improvements.push("Use commas or shorter sentences instead of repeated ' - ' separators");
+  }
+
+  const openingParagraph = content
+    .split(/\n\s*\n/)
+    .find((paragraph) => paragraph.trim().length > 0)
+    ?.trim()
+    .toLowerCase() ?? "";
+  const templatedOpeners = ["picture this:", "imagine this:", "let's dive in", "lets dive in"];
+  if (templatedOpeners.some((opener) => openingParagraph.startsWith(opener))) {
+    score -= 0.6;
+    issues.push("Uses repetitive templated opening phrase");
+    improvements.push("Start with a context-specific opening instead of stock hook phrases");
   }
 
   score = Math.max(0, Number(score.toFixed(1)));

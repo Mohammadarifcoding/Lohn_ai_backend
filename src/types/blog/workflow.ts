@@ -44,6 +44,8 @@ export const BlogAgentStateSchema = z.object({
   // FINAL OUTPUT
   selected_drafts: z.array(DraftSchema).optional(),
   final_blog: z.string().optional(),
+  final_polish_applied: z.boolean().optional(),
+  final_polish_warning: z.string().optional(),
 
   // CONTROL
   iteration_count: z.number(),

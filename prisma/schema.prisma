@@ -76,6 +76,8 @@ model blogGenerationRun {
   iterationCount Int?
   selectedDraftIndex Int?
   finalBlog      String?
+  finalPolishApplied Boolean?
+  finalPolishWarning String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   completedAt   DateTime?

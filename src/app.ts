@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import helmet from "helmet";
+import * as helmetModule from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
@@ -13,11 +13,15 @@ import { logger } from "./utils/logger.js";
 import { sendSuccess } from "./utils/apiResponse.js";
 import userRoutes from "./modules/user/user.routes.js";
 import blogRoutes from "./modules/blog/blog.routes.js";
+import assistantRoutes from "./modules/assistant/assistant.routes.js";
+
+const helmetMiddleware = ((helmetModule as { default?: unknown }).default ??
+  helmetModule) as unknown as () => express.RequestHandler;
 
 const app: Express = express();
 
 // ─── Security & Compression ──────────────────────────────────────────────────
-app.use(helmet());
+app.use(helmetMiddleware());
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",
@@ -62,6 +66,7 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ─── API Routes ──────────────────────────────────────────────────────────────
 app.use("/api/users", userRoutes);
 app.use("/api/admin/blog", blogRoutes);
+app.use("/api/assistant", assistantRoutes);
 
 // ─── Global Error Handler ────────────────────────────────────────────────────
 app.use(errorHandler);

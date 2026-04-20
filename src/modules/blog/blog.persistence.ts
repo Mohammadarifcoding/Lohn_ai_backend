@@ -13,8 +13,39 @@ interface PersistRunParams {
   evaluations?: Evaluation[];
   selectedDraftIndex?: number;
   workflowStatus?: string;
+  finalPolishApplied?: boolean;
+  finalPolishWarning?: string;
   finalBlog?: string;
   error?: string;
+}
+
+interface SelectDraftParams {
+  requestId: string;
+  draftIndex: number;
+  finalBlogOverride?: string;
+}
+
+export interface PersistedRunSnapshot {
+  requestId: string;
+  userId?: string;
+  status: "processing" | "completed" | "failed";
+  createdAt: string;
+  updatedAt: string;
+  durationMs?: number;
+  error?: string;
+  output?: {
+    drafts?: Draft[];
+    evaluations?: Evaluation[];
+    final_evaluation?: {
+      workflow_status: string;
+      selected_draft_index?: number;
+    };
+    selected_drafts?: Draft[];
+    final_blog?: string;
+    final_polish_applied?: boolean;
+    final_polish_warning?: string;
+    iteration_count?: number;
+  };
 }
 
 function isRetryableDbError(error: unknown): boolean {
@@ -68,19 +99,29 @@ export async function persistBlogRun(params: PersistRunParams): Promise<void> {
         iterationCount: params.iterationCount,
         selectedDraftIndex: params.selectedDraftIndex,
         finalBlog: params.finalBlog,
+        finalPolishApplied: params.finalPolishApplied,
+        finalPolishWarning: params.finalPolishWarning,
         workflowStatus: params.workflowStatus,
         error: params.error,
         completedAt: params.status === "completed" ? new Date() : undefined,
       },
       create: {
         requestId: params.requestId,
-        userId: params.userId,
+        user: params.userId
+          ? {
+              connect: {
+                id: params.userId,
+              },
+            }
+          : undefined,
         topic: params.topic,
         status: params.status,
         durationMs: params.durationMs,
         iterationCount: params.iterationCount,
         selectedDraftIndex: params.selectedDraftIndex,
         finalBlog: params.finalBlog,
+        finalPolishApplied: params.finalPolishApplied,
+        finalPolishWarning: params.finalPolishWarning,
         workflowStatus: params.workflowStatus,
         error: params.error,
         completedAt: params.status === "completed" ? new Date() : undefined,
@@ -140,4 +181,177 @@ export async function persistBlogRun(params: PersistRunParams): Promise<void> {
       }),
     );
   }
+}
+
+export async function selectPersistedDraftForRun(
+  params: SelectDraftParams,
+): Promise<{
+  requestId: string;
+  status: string;
+  workflowStatus: string | null;
+  selectedDraftIndex: number | null;
+  finalBlog: string | null;
+}> {
+  const run = await withDbRetry(() =>
+    prisma.blogGenerationRun.findUnique({
+      where: {
+        requestId: params.requestId,
+      },
+      select: {
+        id: true,
+        requestId: true,
+        status: true,
+        workflowStatus: true,
+      },
+    }),
+  );
+
+  if (!run) {
+    throw new Error("Run not found");
+  }
+
+  const draft = await withDbRetry(() =>
+    prisma.blogDraft.findUnique({
+      where: {
+        runId_draftIndex: {
+          runId: run.id,
+          draftIndex: params.draftIndex,
+        },
+      },
+      select: {
+        content: true,
+      },
+    }),
+  );
+
+  if (!draft) {
+    throw new Error("Draft not found");
+  }
+
+  const updatedRun = await withDbRetry(() =>
+    prisma.blogGenerationRun.update({
+      where: {
+        id: run.id,
+      },
+      data: {
+        selectedDraftIndex: params.draftIndex,
+        finalBlog: params.finalBlogOverride ?? draft.content,
+      },
+      select: {
+        requestId: true,
+        status: true,
+        workflowStatus: true,
+        selectedDraftIndex: true,
+        finalBlog: true,
+      },
+    }),
+  );
+
+  return updatedRun;
+}
+
+export async function getPersistedRunSnapshot(
+  requestId: string,
+): Promise<PersistedRunSnapshot | undefined> {
+  const run = await withDbRetry(() =>
+    prisma.blogGenerationRun.findUnique({
+      where: { requestId },
+      select: {
+        requestId: true,
+        userId: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        durationMs: true,
+        error: true,
+        iterationCount: true,
+        workflowStatus: true,
+        finalPolishApplied: true,
+        finalPolishWarning: true,
+        selectedDraftIndex: true,
+        finalBlog: true,
+        drafts: {
+          orderBy: { draftIndex: "asc" },
+          select: {
+            draftIndex: true,
+            ideaIndex: true,
+            ideaTitle: true,
+            mode: true,
+            format: true,
+            content: true,
+            wordCountEstimate: true,
+          },
+        },
+        evaluations: {
+          orderBy: { draftIndex: "asc" },
+          select: {
+            draftIndex: true,
+            score: true,
+            approved: true,
+            issues: true,
+            improvements: true,
+          },
+        },
+      },
+    }),
+  );
+
+  if (!run) {
+    return undefined;
+  }
+
+  const drafts: Draft[] = run.drafts.map((draft) => ({
+    idea_index: draft.ideaIndex,
+    idea_title: draft.ideaTitle,
+    mode:
+      draft.mode === "safe_assumption" ? "safe_assumption" : "research_backed",
+    format: "mdx",
+    content: draft.content,
+    word_count_estimate: draft.wordCountEstimate,
+  }));
+
+  const evaluations: Evaluation[] = run.evaluations.map((evaluation) => ({
+    draft_index: evaluation.draftIndex,
+    score: evaluation.score,
+    approved: evaluation.approved,
+    issues: Array.isArray(evaluation.issues)
+      ? evaluation.issues.map((issue) => String(issue))
+      : [],
+    improvements: Array.isArray(evaluation.improvements)
+      ? evaluation.improvements.map((improvement) => String(improvement))
+      : [],
+  }));
+
+  const selectedDraft =
+    run.selectedDraftIndex !== null && run.selectedDraftIndex !== undefined
+      ? drafts[run.selectedDraftIndex]
+      : undefined;
+
+  return {
+    requestId: run.requestId,
+    userId: run.userId ?? undefined,
+    status:
+      run.status === "completed" || run.status === "failed"
+        ? run.status
+        : "processing",
+    createdAt: run.createdAt.toISOString(),
+    updatedAt: run.updatedAt.toISOString(),
+    durationMs: run.durationMs ?? undefined,
+    error: run.error ?? undefined,
+    output: {
+      drafts,
+      evaluations,
+      final_evaluation: run.workflowStatus
+        ? {
+            workflow_status: run.workflowStatus,
+            selected_draft_index: run.selectedDraftIndex ?? undefined,
+          }
+        : undefined,
+      selected_drafts: selectedDraft ? [selectedDraft] : undefined,
+      final_blog: run.finalBlog ?? undefined,
+      final_polish_applied: run.finalPolishApplied ?? undefined,
+      final_polish_warning: run.finalPolishWarning ?? undefined,
+      iteration_count: run.iterationCount ?? undefined,
+    },
+  };
 }

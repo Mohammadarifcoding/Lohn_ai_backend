@@ -12,6 +12,7 @@ import ideaGenerationAgent from "../../agents/idea_generation.js";
 import writingAgent from "../../agents/writing_agent.js";
 import evaluationAgent from "../../agents/evaluation_agent.js";
 import finalEvaluationAgent from "../../agents/final_evaluation_agent.js";
+import finalLanguagePolishAgent from "../../agents/final_language_polish_agent.js";
 
 // The research pipeline is intentionally split into planning -> validation -> retrieval.
 // This order prevents expensive web search from running on low-quality or duplicate queries.
@@ -24,6 +25,7 @@ const generateBlogGraph = new StateGraph(BlogAgentStateSchema)
   .addNode("writing_agent", writingAgent)
   .addNode("evaluation_agent", evaluationAgent)
   .addNode("final_evaluation_agent", finalEvaluationAgent)
+  .addNode("final_language_polish_agent", finalLanguagePolishAgent)
   .addEdge(START, "requirement_analysis")
   .addEdge("requirement_analysis", "research_planner")
   .addEdge("research_planner", "research_plan_validator")
@@ -32,11 +34,12 @@ const generateBlogGraph = new StateGraph(BlogAgentStateSchema)
   .addEdge("idea_generation", "writing_agent")
   .addEdge("writing_agent", "evaluation_agent")
   .addEdge("evaluation_agent", "final_evaluation_agent")
-  .addEdge("final_evaluation_agent", END)
+  .addEdge("final_evaluation_agent", "final_language_polish_agent")
+  .addEdge("final_language_polish_agent", END)
   .compile({
-    name: "blog_generate_v6",
+    name: "blog_generate_v7",
     description:
-      "Requirement analysis + research + idea + writing + evaluation + final decision workflow",
+      "Requirement analysis + research + idea + writing + evaluation + final decision + polish workflow",
   });
 
 export async function runGenerateBlogGraph(

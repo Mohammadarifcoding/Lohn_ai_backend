@@ -26,6 +26,8 @@ interface BlogRunRecord {
     drafts?: unknown;
     evaluations?: unknown;
     final_evaluation?: unknown;
+    final_polish_applied?: boolean;
+    final_polish_warning?: string;
     selected_drafts?: unknown;
     final_blog?: string;
     tavily_calls_used?: number;
@@ -84,6 +86,8 @@ export function completeRunRecord(
     drafts?: unknown;
     evaluations?: unknown;
     final_evaluation?: unknown;
+    final_polish_applied?: boolean;
+    final_polish_warning?: string;
     selected_drafts?: unknown;
     final_blog?: string;
     tavily_calls_used?: number;
@@ -117,6 +121,8 @@ export function completeRunRecord(
       drafts: data.drafts,
       evaluations: data.evaluations,
       final_evaluation: data.final_evaluation,
+      final_polish_applied: data.final_polish_applied,
+      final_polish_warning: data.final_polish_warning,
       selected_drafts: data.selected_drafts,
       final_blog: data.final_blog,
       tavily_calls_used: data.tavily_calls_used,
@@ -149,4 +155,44 @@ export function failRunRecord(
 export function getRunRecord(requestId: string): BlogRunRecord | undefined {
   sweepExpiredRuns();
   return runs.get(requestId);
+}
+
+export function selectDraftForRunRecord(
+  requestId: string,
+  draftIndex: number,
+  finalBlogOverride?: string,
+): BlogRunRecord | undefined {
+  sweepExpiredRuns();
+  const existing = runs.get(requestId);
+  if (!existing) {
+    return undefined;
+  }
+
+  const output = existing.output;
+  const drafts = Array.isArray(output?.drafts)
+    ? (output.drafts as Array<{ content?: string }>)
+    : [];
+  const selectedDraft = drafts[draftIndex];
+
+  if (!selectedDraft) {
+    return undefined;
+  }
+
+  const updated: BlogRunRecord = {
+    ...existing,
+    updatedAt: new Date().toISOString(),
+    output: {
+      ...output,
+      selected_drafts: [selectedDraft],
+      final_blog:
+        typeof finalBlogOverride === "string"
+          ? finalBlogOverride
+          : typeof selectedDraft.content === "string"
+            ? selectedDraft.content
+            : undefined,
+    },
+  };
+
+  runs.set(requestId, updated);
+  return updated;
 }

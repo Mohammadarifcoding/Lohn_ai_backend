@@ -5,7 +5,13 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+const projectRoot = path.resolve(__dirname, "../../");
+const runtimeEnv = process.env.NODE_ENV ?? "development";
+const envSpecificPath = path.resolve(projectRoot, `.env.${runtimeEnv}`);
+const defaultEnvPath = path.resolve(projectRoot, ".env");
+
+dotenv.config({ path: envSpecificPath });
+dotenv.config({ path: defaultEnvPath });
 
 interface Config {
   PORT: number;

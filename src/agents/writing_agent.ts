@@ -89,6 +89,10 @@ function estimateWordCount(text: string): number {
     .filter((token) => token.length > 0).length;
 }
 
+function countMatches(text: string, regex: RegExp): number {
+  return (text.match(regex) ?? []).length;
+}
+
 function hasFrontmatter(content: string): boolean {
   return /^---\n[\s\S]+?\n---\n/.test(content);
 }
@@ -136,6 +140,16 @@ function runStyleChecks(content: string): string[] {
     "in conclusion",
     "delve into",
     "unlock the power",
+    "leverage",
+    "robust",
+    "seamless",
+    "synergy",
+    "paradigm",
+    "transformative",
+    "utilize",
+    "cutting-edge",
+    "state-of-the-art",
+    "game-changer",
   ];
 
   const lowered = content.toLowerCase();
@@ -143,6 +157,33 @@ function runStyleChecks(content: string): string[] {
     if (lowered.includes(phrase)) {
       issues.push(`Contains AI-like phrase: ${phrase}`);
     }
+  }
+
+  const wordCount = estimateWordCount(content);
+  const colonCount = countMatches(content, /:/g);
+  const hyphenSeparatorCount = countMatches(content, /\s-\s/g);
+  const colonPerThousandWords =
+    wordCount > 0 ? (colonCount / wordCount) * 1000 : colonCount;
+  const hyphenPerThousandWords =
+    wordCount > 0
+      ? (hyphenSeparatorCount / wordCount) * 1000
+      : hyphenSeparatorCount;
+
+  if (colonPerThousandWords > 4) {
+    issues.push("Overuses colon-heavy sentence pattern");
+  }
+  if (hyphenPerThousandWords > 3) {
+    issues.push("Overuses mid-sentence hyphen separators");
+  }
+
+  const openingParagraph = content
+    .split(/\n\s*\n/)
+    .find((paragraph) => paragraph.trim().length > 0)
+    ?.trim()
+    .toLowerCase() ?? "";
+  const templatedOpeners = ["picture this:", "imagine this:", "let's dive in", "lets dive in"];
+  if (templatedOpeners.some((opener) => openingParagraph.startsWith(opener))) {
+    issues.push("Uses repetitive templated opening phrase");
   }
 
   return issues;

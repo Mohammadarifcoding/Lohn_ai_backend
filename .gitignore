@@ -8,7 +8,9 @@ dist/
 # Environment variables
 .env
 .env.local
+.env.development
 .env.*.local
+.env.production
 
 # Logs
 logs/
@@ -35,3 +37,5 @@ coverage/
 .docker/
 
 .env
+
+.vercel
