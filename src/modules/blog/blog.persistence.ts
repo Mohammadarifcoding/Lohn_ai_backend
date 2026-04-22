@@ -1,12 +1,19 @@
 import { prisma } from "../../config/database.js";
 import type { Evaluation } from "../../types/blog/evaluation.js";
 import type { Draft } from "../../types/blog/writing.js";
+import type { BlogInput } from "../../types/blog/blog.js";
 
 interface PersistRunParams {
   requestId: string;
   userId?: string;
   topic: string;
-  status: "completed" | "failed";
+  status:
+    | "queued"
+    | "processing"
+    | "retrying"
+    | "completed"
+    | "failed"
+    | "stalled";
   durationMs: number;
   iterationCount: number;
   drafts?: Draft[];
@@ -17,6 +24,12 @@ interface PersistRunParams {
   finalPolishWarning?: string;
   finalBlog?: string;
   error?: string;
+  triggerRunId?: string;
+  retryCount?: number;
+  queuedAt?: Date;
+  startedAt?: Date;
+  heartbeatAt?: Date;
+  inputPayload?: BlogInput;
 }
 
 interface SelectDraftParams {
@@ -28,9 +41,12 @@ interface SelectDraftParams {
 export interface PersistedRunSnapshot {
   requestId: string;
   userId?: string;
-  status: "processing" | "completed" | "failed";
+  status: "queued" | "processing" | "retrying" | "completed" | "failed" | "stalled";
   createdAt: string;
   updatedAt: string;
+  heartbeatAt?: string;
+  retryCount?: number;
+  triggerRunId?: string;
   durationMs?: number;
   error?: string;
   output?: {
@@ -47,6 +63,20 @@ export interface PersistedRunSnapshot {
     iteration_count?: number;
   };
 }
+
+export interface PersistedRunMeta {
+  id: string;
+  requestId: string;
+  topic: string;
+  userId?: string;
+  status: string;
+  retryCount: number;
+  heartbeatAt?: string;
+  triggerRunId?: string;
+  inputPayload?: BlogInput;
+}
+
+const STALLED_THRESHOLD_MS = 20 * 60 * 1000;
 
 function isRetryableDbError(error: unknown): boolean {
   if (!(error instanceof Error)) {
@@ -103,6 +133,12 @@ export async function persistBlogRun(params: PersistRunParams): Promise<void> {
         finalPolishWarning: params.finalPolishWarning,
         workflowStatus: params.workflowStatus,
         error: params.error,
+        triggerRunId: params.triggerRunId,
+        retryCount: params.retryCount,
+        queuedAt: params.queuedAt,
+        startedAt: params.startedAt,
+        heartbeatAt: params.heartbeatAt,
+        inputPayload: params.inputPayload,
         completedAt: params.status === "completed" ? new Date() : undefined,
       },
       create: {
@@ -124,6 +160,12 @@ export async function persistBlogRun(params: PersistRunParams): Promise<void> {
         finalPolishWarning: params.finalPolishWarning,
         workflowStatus: params.workflowStatus,
         error: params.error,
+        triggerRunId: params.triggerRunId,
+        retryCount: params.retryCount ?? 0,
+        queuedAt: params.queuedAt,
+        startedAt: params.startedAt,
+        heartbeatAt: params.heartbeatAt,
+        inputPayload: params.inputPayload,
         completedAt: params.status === "completed" ? new Date() : undefined,
       },
     }),
@@ -181,6 +223,172 @@ export async function persistBlogRun(params: PersistRunParams): Promise<void> {
       }),
     );
   }
+}
+
+export async function createQueuedRun(params: {
+  requestId: string;
+  userId?: string;
+  topic: string;
+  triggerRunId?: string;
+  inputPayload: BlogInput;
+}): Promise<void> {
+  await withDbRetry(() =>
+    prisma.blogGenerationRun.upsert({
+      where: { requestId: params.requestId },
+      update: {
+        status: "queued",
+        triggerRunId: params.triggerRunId,
+        inputPayload: params.inputPayload,
+        queuedAt: new Date(),
+        heartbeatAt: new Date(),
+      },
+      create: {
+        requestId: params.requestId,
+        user: params.userId
+          ? {
+              connect: {
+                id: params.userId,
+              },
+            }
+          : undefined,
+        topic: params.topic,
+        status: "queued",
+        triggerRunId: params.triggerRunId,
+        inputPayload: params.inputPayload,
+        retryCount: 0,
+        queuedAt: new Date(),
+        heartbeatAt: new Date(),
+      },
+    }),
+  );
+}
+
+export async function markRunProcessing(requestId: string): Promise<void> {
+  await withDbRetry(() =>
+    prisma.blogGenerationRun.update({
+      where: { requestId },
+      data: {
+        status: "processing",
+        startedAt: new Date(),
+        heartbeatAt: new Date(),
+        error: null,
+      },
+    }),
+  );
+}
+
+export async function touchRunHeartbeat(requestId: string): Promise<void> {
+  await withDbRetry(() =>
+    prisma.blogGenerationRun.update({
+      where: { requestId },
+      data: {
+        heartbeatAt: new Date(),
+      },
+    }),
+  );
+}
+
+export async function getPersistedRunMeta(
+  requestId: string,
+): Promise<PersistedRunMeta | undefined> {
+  const run = await withDbRetry(() =>
+    prisma.blogGenerationRun.findUnique({
+      where: { requestId },
+      select: {
+        id: true,
+        requestId: true,
+        topic: true,
+        userId: true,
+        status: true,
+        retryCount: true,
+        heartbeatAt: true,
+        triggerRunId: true,
+        inputPayload: true,
+      },
+    }),
+  );
+
+  if (!run) {
+    return undefined;
+  }
+
+  return {
+    id: run.id,
+    requestId: run.requestId,
+    topic: run.topic,
+    userId: run.userId ?? undefined,
+    status: run.status,
+    retryCount: run.retryCount ?? 0,
+    heartbeatAt: run.heartbeatAt?.toISOString(),
+    triggerRunId: run.triggerRunId ?? undefined,
+    inputPayload: (run.inputPayload as BlogInput | null) ?? undefined,
+  };
+}
+
+export async function incrementRunRetryAndMarkRetrying(
+  requestId: string,
+): Promise<PersistedRunMeta | undefined> {
+  const updated = await withDbRetry(() =>
+    prisma.blogGenerationRun.updateMany({
+      where: {
+        requestId,
+        retryCount: { lt: 1 },
+      },
+      data: {
+        retryCount: { increment: 1 },
+        status: "retrying",
+        heartbeatAt: new Date(),
+      },
+    }),
+  );
+
+  if (updated.count === 0) {
+    return undefined;
+  }
+
+  return getPersistedRunMeta(requestId);
+}
+
+export async function markRunRetryingManual(
+  requestId: string,
+): Promise<PersistedRunMeta | undefined> {
+  await withDbRetry(() =>
+    prisma.blogGenerationRun.update({
+      where: { requestId },
+      data: {
+        retryCount: { increment: 1 },
+        status: "retrying",
+        heartbeatAt: new Date(),
+        error: null,
+      },
+    }),
+  );
+
+  return getPersistedRunMeta(requestId);
+}
+
+export async function markRunStalled(requestId: string): Promise<void> {
+  await withDbRetry(() =>
+    prisma.blogGenerationRun.update({
+      where: { requestId },
+      data: {
+        status: "stalled",
+      },
+    }),
+  );
+}
+
+export function isRunStale(heartbeatAt?: string): boolean {
+  if (!heartbeatAt) {
+    return false;
+  }
+
+  const lastBeat = new Date(heartbeatAt).getTime();
+  if (Number.isNaN(lastBeat)) {
+    return false;
+  }
+
+  return Date.now() - lastBeat > STALLED_THRESHOLD_MS;
 }
 
 export async function selectPersistedDraftForRun(
@@ -270,6 +478,9 @@ export async function getPersistedRunSnapshot(
         finalPolishWarning: true,
         selectedDraftIndex: true,
         finalBlog: true,
+        heartbeatAt: true,
+        retryCount: true,
+        triggerRunId: true,
         drafts: {
           orderBy: { draftIndex: "asc" },
           select: {
@@ -331,11 +542,19 @@ export async function getPersistedRunSnapshot(
     requestId: run.requestId,
     userId: run.userId ?? undefined,
     status:
-      run.status === "completed" || run.status === "failed"
+      run.status === "queued" ||
+      run.status === "processing" ||
+      run.status === "retrying" ||
+      run.status === "completed" ||
+      run.status === "failed" ||
+      run.status === "stalled"
         ? run.status
         : "processing",
     createdAt: run.createdAt.toISOString(),
     updatedAt: run.updatedAt.toISOString(),
+    heartbeatAt: run.heartbeatAt?.toISOString(),
+    retryCount: run.retryCount ?? undefined,
+    triggerRunId: run.triggerRunId ?? undefined,
     durationMs: run.durationMs ?? undefined,
     error: run.error ?? undefined,
     output: {

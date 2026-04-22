@@ -6,15 +6,22 @@ import type { AuthenticatedRequest } from "../../types/index.js";
 import { BadRequestError, NotFoundError } from "../../utils/appError.js";
 import { sendError, sendSuccess } from "../../utils/apiResponse.js";
 import {
-  createRunRecord,
   getRunRecord,
   selectDraftForRunRecord,
 } from "./blog.run-store.js";
 import {
+  createQueuedRun,
+  getPersistedRunMeta,
   getPersistedRunSnapshot,
+  incrementRunRetryAndMarkRetrying,
+  isRunStale,
+  markRunRetryingManual,
+  markRunStalled,
   selectPersistedDraftForRun,
 } from "./blog.persistence.js";
 import { polishDraftContent, runGenerateBlogInBackground } from "./blog.service.js";
+import { enqueueBlogGenerateTask } from "../../trigger/enqueue.js";
+import { runBlogGenerateTask } from "../../trigger/blog-generate.task.js";
 
 const BlogPolishInputSchema = z.object({
   content: z.string().trim().min(1, "content is required"),
@@ -74,15 +81,41 @@ export async function generateBlog(
   }
 
   const requestId = randomUUID();
-  createRunRecord(requestId, req.user?.id);
+  let triggerRunId: string | undefined;
 
-  void runGenerateBlogInBackground(requestId, parsed.data, req.user?.id);
+  try {
+    const enqueueResult = await enqueueBlogGenerateTask({
+      requestId,
+      userId: req.user?.id,
+      input: parsed.data,
+    });
+    triggerRunId = enqueueResult.triggerRunId;
+  } catch {
+    triggerRunId = undefined;
+  }
+
+  await createQueuedRun({
+    requestId,
+    userId: req.user?.id,
+    topic: parsed.data.topic,
+    triggerRunId,
+    inputPayload: parsed.data,
+  });
+
+  if (!triggerRunId) {
+    void runBlogGenerateTask({
+      requestId,
+      userId: req.user?.id,
+      input: parsed.data,
+    }).catch(() => runGenerateBlogInBackground(requestId, parsed.data, req.user?.id));
+  }
 
   sendSuccess(
     res,
     {
       requestId,
-      status: "processing",
+      status: "queued",
+      triggerRunId,
     },
     "Blog generation started",
     202
@@ -96,12 +129,44 @@ export async function getGenerateStatus(
 ): Promise<void> {
   const requestId = getStringParam(req.params.requestId, "requestId");
 
-  let record = getRunRecord(requestId);
-  if (!record) {
-    const persisted = await getPersistedRunSnapshot(requestId);
-    if (persisted) {
-      record = persisted;
+  const meta = await getPersistedRunMeta(requestId);
+
+  if (meta && (meta.status === "processing" || meta.status === "retrying") && isRunStale(meta.heartbeatAt)) {
+    await markRunStalled(requestId);
+
+    if (meta.retryCount < 1 && meta.inputPayload) {
+      const retried = await incrementRunRetryAndMarkRetrying(requestId);
+
+      if (retried?.inputPayload) {
+        try {
+          const retryEnqueue = await enqueueBlogGenerateTask({
+            requestId,
+            userId: retried.userId,
+            input: retried.inputPayload,
+          });
+
+          if (!retryEnqueue.triggerRunId) {
+            void runBlogGenerateTask({
+              requestId,
+              userId: retried.userId,
+              input: retried.inputPayload,
+            });
+          }
+        } catch {
+          void runBlogGenerateTask({
+            requestId,
+            userId: retried.userId,
+            input: retried.inputPayload,
+          });
+        }
+      }
     }
+  }
+
+  let record: unknown = getRunRecord(requestId);
+  const persisted = await getPersistedRunSnapshot(requestId);
+  if (persisted) {
+    record = persisted;
   }
 
   if (!record) {
@@ -110,6 +175,67 @@ export async function getGenerateStatus(
   }
 
   sendSuccess(res, record, "Run status retrieved");
+}
+
+export async function retryGenerateRun(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const requestId = getStringParam(req.params.requestId, "requestId");
+
+  const meta = await getPersistedRunMeta(requestId);
+  if (!meta) {
+    next(new NotFoundError("Run not found"));
+    return;
+  }
+
+  if (meta.status !== "failed" && meta.status !== "stalled") {
+    next(new BadRequestError("Only failed or stalled runs can be retried"));
+    return;
+  }
+
+  if (!meta.inputPayload) {
+    next(new BadRequestError("Missing original workflow input for retry"));
+    return;
+  }
+
+  const retried = await markRunRetryingManual(requestId);
+  if (!retried?.inputPayload) {
+    next(new BadRequestError("Missing original workflow input for retry"));
+    return;
+  }
+
+  try {
+    const enqueueResult = await enqueueBlogGenerateTask({
+      requestId,
+      userId: retried.userId,
+      input: retried.inputPayload,
+    });
+
+    if (!enqueueResult.triggerRunId) {
+      void runBlogGenerateTask({
+        requestId,
+        userId: retried.userId,
+        input: retried.inputPayload,
+      });
+    }
+  } catch {
+    void runBlogGenerateTask({
+      requestId,
+      userId: retried.userId,
+      input: retried.inputPayload,
+    });
+  }
+
+  sendSuccess(
+    res,
+    {
+      requestId,
+      status: "retrying",
+    },
+    "Run retry started",
+  );
 }
 
 export async function selectDraftForRun(

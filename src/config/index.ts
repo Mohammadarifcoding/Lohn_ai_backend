@@ -9,9 +9,11 @@ const projectRoot = path.resolve(__dirname, "../../");
 const runtimeEnv = process.env.NODE_ENV ?? "development";
 const envSpecificPath = path.resolve(projectRoot, `.env.${runtimeEnv}`);
 const defaultEnvPath = path.resolve(projectRoot, ".env");
+const localEnvPath = path.resolve(projectRoot, ".env.local");
 
-dotenv.config({ path: envSpecificPath });
 dotenv.config({ path: defaultEnvPath });
+dotenv.config({ path: envSpecificPath });
+dotenv.config({ path: localEnvPath, override: true });
 
 interface Config {
   PORT: number;
@@ -31,6 +33,7 @@ interface Config {
   ADMIN_NAME: string;
   ADMIN_EMAIL: string;
   ADMIN_PASSWORD: string;
+  TRIGGER_SECRET_KEY?: string;
 }
 
 function getEnvVar(key: string, fallback?: string): string {
@@ -41,12 +44,20 @@ function getEnvVar(key: string, fallback?: string): string {
   return value;
 }
 
+function getOptionalEnvVar(key: string): string | undefined {
+  const value = process.env[key];
+  if (!value) {
+    return undefined;
+  }
+  return value;
+}
+
 export const config: Config = {
   PORT: parseInt(getEnvVar("PORT", "3000"), 10),
   NODE_ENV: getEnvVar("NODE_ENV", "development"),
   DATABASE_URL: getEnvVar("DATABASE_URL"),
   BETTER_AUTH_SECRET: getEnvVar("BETTER_AUTH_SECRET"),
-  BETTER_AUTH_URL: getEnvVar("BETTER_AUTH_URL", "http://localhost:3000"),
+  BETTER_AUTH_URL: getEnvVar("BETTER_AUTH_URL", "http://localhost:3001"),
   RATE_LIMIT_WINDOW_MS: parseInt(
     getEnvVar("RATE_LIMIT_WINDOW_MS", "900000"),
     10,
@@ -62,6 +73,7 @@ export const config: Config = {
   ADMIN_NAME: getEnvVar("ADMIN_NAME", "Admin User"),
   ADMIN_EMAIL: getEnvVar("ADMIN_EMAIL", "admin@local.dev"),
   ADMIN_PASSWORD: getEnvVar("ADMIN_PASSWORD", "Admin@12345678"),
+  TRIGGER_SECRET_KEY: getOptionalEnvVar("TRIGGER_SECRET_KEY"),
 };
 
 export const isDev = config.NODE_ENV === "development";

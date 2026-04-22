@@ -6,7 +6,7 @@ import {
   completeRunRecord,
   failRunRecord,
 } from "./blog.run-store.js";
-import { persistBlogRun } from "./blog.persistence.js";
+import { persistBlogRun, touchRunHeartbeat } from "./blog.persistence.js";
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -300,6 +300,7 @@ export async function runGenerateBlogInBackground(
   userId?: string
 ): Promise<void> {
   const startedAt = Date.now();
+  let heartbeatTimer: NodeJS.Timeout | undefined;
 
   logger.info("Blog generation workflow started", {
     requestId,
@@ -310,7 +311,14 @@ export async function runGenerateBlogInBackground(
   try {
     // Execute the workflow fully in background and persist a snapshot of key state
     // so clients can poll status without waiting on a long request.
+    heartbeatTimer = setInterval(() => {
+      void touchRunHeartbeat(requestId).catch(() => undefined);
+    }, 60_000);
+    heartbeatTimer.unref();
+
     const state = await runGenerateBlogGraph(userInput);
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = undefined;
     const durationMs = Date.now() - startedAt;
 
     const output = {
@@ -390,6 +398,7 @@ export async function runGenerateBlogInBackground(
             ? selectedDraftIndex
             : undefined,
         finalBlog: state.final_blog,
+        heartbeatAt: new Date(),
       });
     } catch (persistError) {
       const persistMessage = getErrorMessage(persistError);
@@ -453,6 +462,7 @@ export async function runGenerateBlogInBackground(
         iterationCount: 0,
         workflowStatus: "failed",
         error: message,
+        heartbeatAt: new Date(),
       });
     } catch (persistError) {
       const persistMessage = getErrorMessage(persistError);
@@ -469,5 +479,9 @@ export async function runGenerateBlogInBackground(
       durationMs,
       error: message,
     });
+  } finally {
+    if (heartbeatTimer) {
+      clearInterval(heartbeatTimer);
+    }
   }
 }

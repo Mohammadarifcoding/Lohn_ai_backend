@@ -5,6 +5,7 @@ import {
   generateBlog,
   getGenerateStatus,
   polishDraft,
+  retryGenerateRun,
   selectDraftForRun,
 } from "./blog.controller.js";
 
@@ -104,6 +105,13 @@ router.post(
   authenticate,
   requireRole("admin"),
   asyncHandler(selectDraftForRun),
+);
+
+router.post(
+  "/generate/:requestId/retry",
+  authenticate,
+  requireRole("admin"),
+  asyncHandler(retryGenerateRun),
 );
 
 /**
