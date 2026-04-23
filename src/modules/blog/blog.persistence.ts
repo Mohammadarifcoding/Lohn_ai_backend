@@ -263,6 +263,21 @@ export async function createQueuedRun(params: {
   );
 }
 
+export async function updateQueuedRunTriggerId(params: {
+  requestId: string;
+  triggerRunId: string;
+}): Promise<void> {
+  await withDbRetry(() =>
+    prisma.blogGenerationRun.update({
+      where: { requestId: params.requestId },
+      data: {
+        triggerRunId: params.triggerRunId,
+        heartbeatAt: new Date(),
+      },
+    }),
+  );
+}
+
 export async function markRunProcessing(requestId: string): Promise<void> {
   await withDbRetry(() =>
     prisma.blogGenerationRun.update({

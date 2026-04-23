@@ -7,7 +7,7 @@ import swaggerUi from "swagger-ui-express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./config/auth.js";
 import { swaggerSpec } from "./config/swagger.js";
-import { apiLimiter, authLimiter } from "./middleware/rateLimiter.js";
+import { adminApiLimiter, apiLimiter, authLimiter } from "./middleware/rateLimiter.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { logger } from "./utils/logger.js";
 import { sendSuccess } from "./utils/apiResponse.js";
@@ -19,6 +19,10 @@ const helmetMiddleware = ((helmetModule as { default?: unknown }).default ??
   helmetModule) as unknown as () => express.RequestHandler;
 
 const app: Express = express();
+
+if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 // ─── Security & Compression ──────────────────────────────────────────────────
 app.use(helmetMiddleware());
@@ -32,6 +36,8 @@ app.use(compression());
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 app.use("/api/auth", authLimiter);
+app.use("/api/admin", adminApiLimiter);
+app.use("/api/users/me", adminApiLimiter);
 app.use("/api", apiLimiter);
 
 // ─── Better Auth Handler (MUST be before express.json()) ─────────────────────

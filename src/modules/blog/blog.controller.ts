@@ -5,10 +5,7 @@ import { BlogInputSchema } from "../../types/blog/blog.js";
 import type { AuthenticatedRequest } from "../../types/index.js";
 import { BadRequestError, NotFoundError } from "../../utils/appError.js";
 import { sendError, sendSuccess } from "../../utils/apiResponse.js";
-import {
-  getRunRecord,
-  selectDraftForRunRecord,
-} from "./blog.run-store.js";
+import { selectDraftForRunRecord } from "./blog.run-store.js";
 import {
   createQueuedRun,
   getPersistedRunMeta,
@@ -18,10 +15,12 @@ import {
   markRunRetryingManual,
   markRunStalled,
   selectPersistedDraftForRun,
+  updateQueuedRunTriggerId,
 } from "./blog.persistence.js";
 import { polishDraftContent, runGenerateBlogInBackground } from "./blog.service.js";
 import { enqueueBlogGenerateTask } from "../../trigger/enqueue.js";
 import { runBlogGenerateTask } from "../../trigger/blog-generate.task.js";
+import { logger } from "../../utils/logger.js";
 
 const BlogPolishInputSchema = z.object({
   content: z.string().trim().min(1, "content is required"),
@@ -83,6 +82,13 @@ export async function generateBlog(
   const requestId = randomUUID();
   let triggerRunId: string | undefined;
 
+  await createQueuedRun({
+    requestId,
+    userId: req.user?.id,
+    topic: parsed.data.topic,
+    inputPayload: parsed.data,
+  });
+
   try {
     const enqueueResult = await enqueueBlogGenerateTask({
       requestId,
@@ -90,17 +96,20 @@ export async function generateBlog(
       input: parsed.data,
     });
     triggerRunId = enqueueResult.triggerRunId;
-  } catch {
+
+    if (triggerRunId) {
+      await updateQueuedRunTriggerId({
+        requestId,
+        triggerRunId,
+      });
+    }
+  } catch (error) {
+    logger.warn("Blog generation enqueue failed; falling back to direct execution", {
+      requestId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
     triggerRunId = undefined;
   }
-
-  await createQueuedRun({
-    requestId,
-    userId: req.user?.id,
-    topic: parsed.data.topic,
-    triggerRunId,
-    inputPayload: parsed.data,
-  });
 
   if (!triggerRunId) {
     void runBlogGenerateTask({
@@ -145,6 +154,13 @@ export async function getGenerateStatus(
             input: retried.inputPayload,
           });
 
+          if (retryEnqueue.triggerRunId) {
+            await updateQueuedRunTriggerId({
+              requestId,
+              triggerRunId: retryEnqueue.triggerRunId,
+            });
+          }
+
           if (!retryEnqueue.triggerRunId) {
             void runBlogGenerateTask({
               requestId,
@@ -152,7 +168,11 @@ export async function getGenerateStatus(
               input: retried.inputPayload,
             });
           }
-        } catch {
+        } catch (error) {
+          logger.warn("Blog generation stalled retry enqueue failed; falling back to direct execution", {
+            requestId,
+            error: error instanceof Error ? error.message : "Unknown error",
+          });
           void runBlogGenerateTask({
             requestId,
             userId: retried.userId,
@@ -163,18 +183,13 @@ export async function getGenerateStatus(
     }
   }
 
-  let record: unknown = getRunRecord(requestId);
   const persisted = await getPersistedRunSnapshot(requestId);
-  if (persisted) {
-    record = persisted;
-  }
-
-  if (!record) {
+  if (!persisted) {
     next(new NotFoundError("Run not found"));
     return;
   }
 
-  sendSuccess(res, record, "Run status retrieved");
+  sendSuccess(res, persisted, "Run status retrieved");
 }
 
 export async function retryGenerateRun(
@@ -213,6 +228,13 @@ export async function retryGenerateRun(
       input: retried.inputPayload,
     });
 
+    if (enqueueResult.triggerRunId) {
+      await updateQueuedRunTriggerId({
+        requestId,
+        triggerRunId: enqueueResult.triggerRunId,
+      });
+    }
+
     if (!enqueueResult.triggerRunId) {
       void runBlogGenerateTask({
         requestId,
@@ -220,7 +242,11 @@ export async function retryGenerateRun(
         input: retried.inputPayload,
       });
     }
-  } catch {
+  } catch (error) {
+    logger.warn("Blog generation retry enqueue failed; falling back to direct execution", {
+      requestId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
     void runBlogGenerateTask({
       requestId,
       userId: retried.userId,

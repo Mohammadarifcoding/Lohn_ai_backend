@@ -11,9 +11,14 @@ const envSpecificPath = path.resolve(projectRoot, `.env.${runtimeEnv}`);
 const defaultEnvPath = path.resolve(projectRoot, ".env");
 const localEnvPath = path.resolve(projectRoot, ".env.local");
 
-dotenv.config({ path: defaultEnvPath });
-dotenv.config({ path: envSpecificPath });
-dotenv.config({ path: localEnvPath, override: true });
+const isVercelRuntime = process.env.VERCEL === "1" || process.env.VERCEL === "true";
+const isProductionRuntime = runtimeEnv === "production";
+
+if (!(isVercelRuntime && isProductionRuntime)) {
+  dotenv.config({ path: defaultEnvPath, quiet: true });
+  dotenv.config({ path: envSpecificPath, quiet: true });
+  dotenv.config({ path: localEnvPath, override: true, quiet: true });
+}
 
 interface Config {
   PORT: number;
