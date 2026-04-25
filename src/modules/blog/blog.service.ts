@@ -2,6 +2,7 @@ import type { BlogInput } from "../../types/blog/blog.js";
 import { runFinalLanguagePolish } from "../../agents/final_language_polish_agent.js";
 import { logger } from "../../utils/logger.js";
 import { runGenerateBlogGraph } from "../../workflows/blog/generate.graph.js";
+import { normalizeFrontmatterFields } from "./frontmatter-style.js";
 import {
   completeRunRecord,
   failRunRecord,
@@ -128,7 +129,8 @@ function countProseMatches(content: string, regex: RegExp): number {
 }
 
 function deterministicCleanup(content: string): DeterministicCleanupResult {
-  const { frontmatter, body } = splitFrontmatter(content);
+  const normalizedContent = normalizeFrontmatterFields(content);
+  const { frontmatter, body } = splitFrontmatter(normalizedContent);
   let aiPhraseReplacements = 0;
   let colonFixes = 0;
   let hyphenFixes = 0;

@@ -2,7 +2,7 @@ import type { Response } from "express";
 import type { AuthenticatedRequest } from "../../types/index.js";
 import { sendError, sendSuccess } from "../../utils/apiResponse.js";
 import { DeepPayrollAnswerSchema } from "./assistant.schema.js";
-import { generateDeepPayrollAnswer } from "./assistant.service.js";
+import { generateDeepPayrollContext } from "./assistant.service.js";
 
 export async function classifyDeepSearchNeed(
   req: AuthenticatedRequest,
@@ -108,15 +108,18 @@ export async function answerDeepPayroll(
     return;
   }
 
-  const result = await generateDeepPayrollAnswer(parsed.data);
+  const result = await generateDeepPayrollContext(parsed.data);
 
   sendSuccess(
     res,
     {
-      answer: result.answer,
+      query: result.query,
+      snippets: result.snippets,
+      asOf: result.asOf,
+      confidence: result.confidence,
       sources: result.sources,
       searched: result.searched,
     },
-    "Deep payroll answer generated",
+    "Deep payroll context generated",
   );
 }

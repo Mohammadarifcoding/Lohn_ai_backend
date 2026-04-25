@@ -2,6 +2,10 @@ import { GraphNode } from "@langchain/langgraph";
 import type { Draft } from "../types/blog/writing.js";
 import type { Evaluation } from "../types/blog/evaluation.js";
 import { BlogAgentStateSchema } from "../types/blog/workflow.js";
+import {
+  analyzeFrontmatterStyle,
+  normalizeFrontmatterFields,
+} from "../modules/blog/frontmatter-style.js";
 
 const APPROVAL_THRESHOLD = 8;
 
@@ -102,6 +106,18 @@ function evaluateDraftOnce(draft: Draft, draftIndex: number): Evaluation {
     improvements.push("Add at least one comparison or target-state table");
   }
 
+  const frontmatterAnalysis = analyzeFrontmatterStyle(content);
+  if (frontmatterAnalysis.hardIssues.length > 0) {
+    score -= Math.min(1.8, frontmatterAnalysis.hardIssues.length * 0.6);
+    issues.push(...frontmatterAnalysis.hardIssues);
+    improvements.push("Rewrite the frontmatter title, SEO title, and excerpt in plain editorial language");
+  }
+  if (frontmatterAnalysis.softIssues.length > 0) {
+    score -= Math.min(0.8, frontmatterAnalysis.softIssues.length * 0.25);
+    issues.push(...frontmatterAnalysis.softIssues);
+    improvements.push("Make the title and excerpt more specific and less templated");
+  }
+
   if (wordCount < 900) {
     score -= 1;
     issues.push("Draft is shorter than expected depth");
@@ -189,7 +205,7 @@ function evaluateDraftOnce(draft: Draft, draftIndex: number): Evaluation {
 }
 
 function applySingleRefinement(draft: Draft, evaluation: Evaluation): Draft {
-  let refined = draft.content;
+  let refined = normalizeFrontmatterFields(draft.content);
   const currentYear = new Date().getUTCFullYear().toString();
 
   if (evaluation.issues.some((issue) => issue.includes("Semicolon usage"))) {

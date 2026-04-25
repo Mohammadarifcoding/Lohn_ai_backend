@@ -9,6 +9,10 @@ import type { ResearchResult } from "../types/blog/research.js";
 import { BlogAgentStateSchema } from "../types/blog/workflow.js";
 import { logger } from "../utils/logger.js";
 import { normalizeProviderError } from "../utils/providerError.js";
+import {
+  analyzeFrontmatterStyle,
+  normalizeFrontmatterFields,
+} from "../modules/blog/frontmatter-style.js";
 
 const DRAFT_COUNT = 3;
 
@@ -30,7 +34,7 @@ function normalizeDocumentSpacing(value: string): string {
 function normalizeContentPostGeneration(value: string): string {
   const currentYear = new Date().getUTCFullYear().toString();
 
-  return value
+  return normalizeFrontmatterFields(value)
     .replace(/\b(20\d{2})\b/g, (match) =>
       match === currentYear ? match : currentYear,
     )
@@ -217,6 +221,9 @@ function collectDraftStyleWarnings(content: string): string[] {
 
   warnings.push(...runStyleChecks(content));
 
+  const frontmatterAnalysis = analyzeFrontmatterStyle(content);
+  warnings.push(...frontmatterAnalysis.softIssues);
+
   return warnings;
 }
 
@@ -353,6 +360,8 @@ async function generateSingleDraft(
         normalizeDocumentSpacing(content),
       );
       const hardIssues = validateDraftHardRequirements(normalized);
+      const frontmatterAnalysis = analyzeFrontmatterStyle(normalized);
+      hardIssues.push(...frontmatterAnalysis.hardIssues);
       const styleWarnings = collectDraftStyleWarnings(normalized);
       if (hardIssues.length === 0) {
         return {
