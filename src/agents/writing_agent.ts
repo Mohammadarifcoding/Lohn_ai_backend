@@ -38,7 +38,8 @@ function normalizeContentPostGeneration(value: string): string {
     .replace(/\b(20\d{2})\b/g, (match) =>
       match === currentYear ? match : currentYear,
     )
-    .replace(/[–—]/g, "-");
+    .replace(/[–—]/g, "-")
+    .replace(/\s+-\s+/g, "-");
 }
 
 function extractTextContent(content: unknown): string {
@@ -286,7 +287,7 @@ function buildWritingInput(
       research_points: selectResearchPoints(state.research_results ?? [], compact ? 3 : 5),
       metadata: {
         author: "LohnAI Team",
-        category: "Payroll",
+        category: "Lohnabrechnung",
         featured: false,
       },
     };
@@ -300,7 +301,7 @@ function buildWritingInput(
     safe_research_points: selectResearchPoints(state.research_results ?? [], compact ? 1 : 2),
     metadata: {
       author: "LohnAI Team",
-      category: "Payroll",
+      category: "Lohnabrechnung",
       featured: false,
     },
   };

@@ -89,6 +89,7 @@ function normalizeRepeatedSeparators(value: string): string {
   return value
     .replace(/[–—]/g, "-")
     .replace(/\s+-\s+-\s+/g, " - ")
+    .replace(/\s+-\s+/g, "-")
     .replace(/\s{2,}/g, " ")
     .trim();
 }

@@ -7,6 +7,7 @@ import {
   polishDraft,
   retryGenerateRun,
   selectDraftForRun,
+  translateBlog,
 } from "./blog.controller.js";
 
 const router: RouterType = Router();
@@ -150,6 +151,13 @@ router.post(
   authenticate,
   requireRole("admin"),
   asyncHandler(polishDraft),
+);
+
+router.post(
+  "/translate",
+  authenticate,
+  requireRole("admin"),
+  asyncHandler(translateBlog),
 );
 
 export default router;

@@ -18,6 +18,7 @@ import {
   updateQueuedRunTriggerId,
 } from "./blog.persistence.js";
 import { polishDraftContent, runGenerateBlogInBackground } from "./blog.service.js";
+import { translateBlogMdxToEnglish } from "./blog.translate.js";
 import { enqueueBlogGenerateTask } from "../../trigger/enqueue.js";
 import { runBlogGenerateTask } from "../../trigger/blog-generate.task.js";
 import { logger } from "../../utils/logger.js";
@@ -25,6 +26,10 @@ import { logger } from "../../utils/logger.js";
 const BlogPolishInputSchema = z.object({
   content: z.string().trim().min(1, "content is required"),
   strictStructure: z.boolean().optional(),
+});
+
+const BlogTranslateInputSchema = z.object({
+  content: z.string().trim().min(1, "content is required"),
 });
 
 function getStringParam(param: string | string[] | undefined, label: string): string {
@@ -335,5 +340,28 @@ export async function polishDraft(
     res,
     result,
     "Draft polish completed",
+  );
+}
+
+export async function translateBlog(
+  req: AuthenticatedRequest,
+  res: Response,
+): Promise<void> {
+  const parsed = BlogTranslateInputSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+    sendError(res, "Validation failed", 400, errors);
+    return;
+  }
+
+  const translatedContent = await translateBlogMdxToEnglish(parsed.data.content);
+
+  sendSuccess(
+    res,
+    { translatedContent },
+    "Blog translation completed",
   );
 }
