@@ -9,8 +9,9 @@ export default defineConfig({
   build: {
     extensions: [
       prismaExtension({
-        mode: "legacy",
-        schema: "./prisma/schema.prisma",
+        mode: "engine-only",
+        version: "6.19.3",
+        binaryTarget: "debian-openssl-3.0.x",
       }),
     ],
   },

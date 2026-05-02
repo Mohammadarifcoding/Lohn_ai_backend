@@ -19,8 +19,9 @@ import {
 } from "./blog.persistence.js";
 import { polishDraftContent, runGenerateBlogInBackground } from "./blog.service.js";
 import { translateBlogMdxToEnglish } from "./blog.translate.js";
-import { enqueueBlogGenerateTask } from "../../trigger/enqueue.js";
+import { enqueueBlogGenerateTask, enqueueBlogTranslateTask } from "../../trigger/enqueue.js";
 import { runBlogGenerateTask } from "../../trigger/blog-generate.task.js";
+import { runBlogTranslateTask } from "../../trigger/blog-translate.task.js";
 import { logger } from "../../utils/logger.js";
 
 const BlogPolishInputSchema = z.object({
@@ -30,6 +31,15 @@ const BlogPolishInputSchema = z.object({
 
 const BlogTranslateInputSchema = z.object({
   content: z.string().trim().min(1, "content is required"),
+});
+
+const BlogTranslateBackgroundInputSchema = z.object({
+  briefId: z.string().trim().min(1, "briefId is required"),
+  germanSlug: z.string().trim().min(1, "germanSlug is required"),
+  germanMdxContent: z.string().trim().min(1, "germanMdxContent is required"),
+  fallbackTitle: z.string().trim().min(1, "fallbackTitle is required"),
+  fallbackCategory: z.string().trim().min(1, "fallbackCategory is required"),
+  fallbackTopic: z.string().trim().min(1, "fallbackTopic is required"),
 });
 
 function getStringParam(param: string | string[] | undefined, label: string): string {
@@ -363,5 +373,52 @@ export async function translateBlog(
     res,
     { translatedContent },
     "Blog translation completed",
+  );
+}
+
+export async function translateBlogInBackground(
+  req: AuthenticatedRequest,
+  res: Response,
+): Promise<void> {
+  const parsed = BlogTranslateBackgroundInputSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+    sendError(res, "Validation failed", 400, errors);
+    return;
+  }
+
+  let triggerRunId: string | undefined;
+
+  try {
+    const enqueueResult = await enqueueBlogTranslateTask(parsed.data);
+    triggerRunId = enqueueResult.triggerRunId;
+  } catch (error) {
+    logger.warn("Blog translation enqueue failed; falling back to direct execution", {
+      briefId: parsed.data.briefId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    triggerRunId = undefined;
+  }
+
+  if (!triggerRunId) {
+    void runBlogTranslateTask(parsed.data).catch((error) => {
+      logger.error("Direct blog translation execution failed", {
+        briefId: parsed.data.briefId,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    });
+  }
+
+  sendSuccess(
+    res,
+    {
+      status: "queued",
+      triggerRunId,
+    },
+    "Blog translation queued",
+    202,
   );
 }

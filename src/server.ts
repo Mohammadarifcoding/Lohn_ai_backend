@@ -21,6 +21,14 @@ const startServer = async () => {
   }
 };
 
+const bootstrapForServerless = async () => {
+  try {
+    await bootstrapAdminAccount();
+  } catch (error) {
+    logger.error("Failed to bootstrap admin account:", error);
+  }
+};
+
 // Graceful shutdown
 process.on("SIGTERM", () => {
   logger.info("SIGTERM received. Shutting down gracefully...");
@@ -41,4 +49,10 @@ process.on("uncaughtException", (error) => {
   process.exit(1);
 });
 
-startServer();
+if (process.env.VERCEL === "1") {
+  void bootstrapForServerless();
+} else {
+  void startServer();
+}
+
+export default app;

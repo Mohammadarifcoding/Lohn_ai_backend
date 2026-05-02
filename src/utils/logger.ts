@@ -14,6 +14,7 @@ const devFormat = combine(
 const prodFormat = combine(timestamp(), json());
 
 const isProduction = process.env.NODE_ENV === "production";
+const useFileTransports = isProduction && process.env.VERCEL !== "1";
 
 export const logger = winston.createLogger({
   level: isProduction ? "info" : "debug",
@@ -21,7 +22,7 @@ export const logger = winston.createLogger({
   defaultMeta: { service: "blog-workflow-api" },
   transports: [
     new winston.transports.Console(),
-    ...(isProduction
+    ...(useFileTransports
       ? [
           new winston.transports.File({
             filename: "logs/error.log",

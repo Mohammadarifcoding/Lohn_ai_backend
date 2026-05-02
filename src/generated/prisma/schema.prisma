@@ -1,0 +1,266 @@
+generator website_client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+generator backend_client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
+  output        = "../../lohnai_backend/src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BlogBriefStatus {
+  new
+  in_progress
+  ready
+  selected
+  published
+  failed
+}
+
+model User {
+  id            String              @id
+  name          String
+  email         String              @unique
+  emailVerified Boolean             @default(false)
+  image         String?
+  role          String              @default("user")
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  blogRuns      blogGenerationRun[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
+
+model AiConversation {
+  id             String     @id @default(cuid())
+  conversationId String     @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  apiHitCount    Int        @default(0)
+  hits           AiApiHit[]
+
+  @@map("ai_conversation")
+}
+
+model AiApiHit {
+  id             String         @id @default(cuid())
+  route          String
+  createdAt      DateTime       @default(now())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [conversationId], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([conversationId])
+  @@map("ai_api_hit")
+}
+
+model SitePageView {
+  id          String   @id @default(cuid())
+  pathname    String
+  visitorHash String
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([visitorHash])
+  @@index([pathname])
+  @@map("site_page_view")
+}
+
+model BlogBrief {
+  id                      String          @id @default(cuid())
+  title                   String?
+  topic                   String
+  goal                    String          @default("")
+  audience                String          @default("")
+  userContext             String?
+  tone                    String?
+  keywords                String[]        @default([])
+  includeServices         String[]        @default([])
+  constraints             String[]        @default([])
+  depth                   String?
+  backendRequestId        String?         @unique
+  selectedDraftIndex      Int?
+  finalDraftContent       String?
+  slug                    String?
+  locale                  String          @default("en")
+  publishedAt             DateTime?
+  translationStatus       String          @default("not_started")
+  translationError        String?
+  translationTriggerRunId String?
+  englishSlug             String?
+  translationStartedAt    DateTime?
+  translationCompletedAt  DateTime?
+  generationError         String?
+  idea                    String
+  clientHints             String?
+  category                String?
+  status                  BlogBriefStatus @default(new)
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  draftEdits              BlogDraftEdit[]
+
+  @@index([createdAt])
+  @@index([status])
+  @@map("blog_brief")
+}
+
+model BlogDraftEdit {
+  id         String    @id @default(cuid())
+  briefId    String
+  draftIndex Int
+  content    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  brief      BlogBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  @@unique([briefId, draftIndex])
+  @@index([briefId])
+  @@map("blog_draft_edit")
+}
+
+model BlogPost {
+  id                 String   @id @default(cuid())
+  slug               String
+  locale             String
+  title              String
+  excerpt            String
+  author             String
+  category           String
+  featured           Boolean  @default(false)
+  seoTitle           String?
+  seoDescription     String?
+  coverImage         String?
+  frontmatterJson    Json?
+  mdxContent         String
+  sourceBriefId      String?
+  sourceRequestId    String?
+  translationGroupId String?
+  publishedAt        DateTime
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([locale, slug])
+  @@index([publishedAt])
+  @@index([translationGroupId])
+  @@map("blog_post")
+}
+
+model blogGenerationRun {
+  id                 String    @id @default(uuid())
+  requestId          String    @unique
+  userId             String?
+  topic              String
+  inputPayload       Json?
+  status             String
+  triggerRunId       String?
+  retryCount         Int       @default(0)
+  workflowStatus     String?
+  error              String?
+  durationMs         Int?
+  iterationCount     Int?
+  selectedDraftIndex Int?
+  finalBlog          String?
+  finalPolishApplied Boolean?
+  finalPolishWarning String?
+  queuedAt           DateTime?
+  startedAt          DateTime?
+  heartbeatAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  completedAt        DateTime?
+
+  user        User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  drafts      blogDraft[]
+  evaluations blogEvaluation[]
+}
+
+model blogDraft {
+  id                String   @id @default(uuid())
+  runId             String
+  draftIndex        Int
+  ideaIndex         Int
+  ideaTitle         String
+  mode              String
+  format            String
+  content           String
+  wordCountEstimate Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  run        blogGenerationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  evaluation blogEvaluation?
+
+  @@unique([runId, draftIndex])
+}
+
+model blogEvaluation {
+  id           String   @id @default(uuid())
+  runId        String
+  draftId      String   @unique
+  draftIndex   Int
+  score        Float
+  approved     Boolean
+  issues       Json
+  improvements Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  run   blogGenerationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  draft blogDraft         @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}

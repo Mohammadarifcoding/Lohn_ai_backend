@@ -8,6 +8,7 @@ import {
   retryGenerateRun,
   selectDraftForRun,
   translateBlog,
+  translateBlogInBackground,
 } from "./blog.controller.js";
 
 const router: RouterType = Router();
@@ -158,6 +159,13 @@ router.post(
   authenticate,
   requireRole("admin"),
   asyncHandler(translateBlog),
+);
+
+router.post(
+  "/translate-background",
+  authenticate,
+  requireRole("admin"),
+  asyncHandler(translateBlogInBackground),
 );
 
 export default router;
