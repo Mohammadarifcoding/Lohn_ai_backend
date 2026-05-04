@@ -38,7 +38,8 @@ function parseFrontmatter(content: string): {
   frontmatter: Record<string, string | boolean>;
 } {
   const normalized = content.replace(/\r\n/g, "\n").trim();
-  const match = normalized.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+
+  const match = normalized.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)([\s\S]*)$/);
   if (!match) {
     return {
       body: normalized,
@@ -47,19 +48,35 @@ function parseFrontmatter(content: string): {
   }
 
   const frontmatter: Record<string, string | boolean> = {};
-  for (const line of match[1].split("\n")) {
+  const yamlBlock = match[1];
+
+  for (const rawLine of yamlBlock.split("\n")) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) {
+      continue;
+    }
+
     const colonIndex = line.indexOf(":");
     if (colonIndex <= 0) {
       continue;
     }
 
     const key = line.slice(0, colonIndex).trim();
-    const rawValue = stripQuotes(line.slice(colonIndex + 1));
-    frontmatter[key] = rawValue === "true" ? true : rawValue === "false" ? false : rawValue;
+    const rawValue = line.slice(colonIndex + 1).trim();
+
+    if (rawValue === "true") {
+      frontmatter[key] = true;
+    } else if (rawValue === "false") {
+      frontmatter[key] = false;
+    } else if (rawValue === "") {
+      frontmatter[key] = "";
+    } else {
+      frontmatter[key] = stripQuotes(rawValue);
+    }
   }
 
   return {
-    body: match[2].trim(),
+    body: (match[2] ?? "").trim(),
     frontmatter,
   };
 }
@@ -174,7 +191,7 @@ export async function runBlogTranslateTask(
     const translatedPublishResult = buildPublishedMdx({
       markdown: translatedContent,
       fallbackTitle: payload.fallbackTitle,
-      fallbackCategory: "Payroll",
+      fallbackCategory: payload.fallbackCategory,
       fallbackTopic: payload.fallbackTopic,
     });
     const translatedFrontmatter = translatedPublishResult.frontmatter;
@@ -194,7 +211,7 @@ export async function runBlogTranslateTask(
         title: String(translatedFrontmatter.title ?? translatedPublishResult.title),
         excerpt: String(translatedFrontmatter.excerpt ?? ""),
         author: String(translatedFrontmatter.author ?? "LohnAI Team"),
-        category: String(translatedFrontmatter.category ?? "Payroll"),
+        category: String(translatedFrontmatter.category ?? payload.fallbackCategory),
         featured: Boolean(translatedFrontmatter.featured ?? false),
         seoTitle:
           typeof translatedFrontmatter.seoTitle === "string"
@@ -221,7 +238,7 @@ export async function runBlogTranslateTask(
         title: String(translatedFrontmatter.title ?? translatedPublishResult.title),
         excerpt: String(translatedFrontmatter.excerpt ?? ""),
         author: String(translatedFrontmatter.author ?? "LohnAI Team"),
-        category: String(translatedFrontmatter.category ?? "Payroll"),
+        category: String(translatedFrontmatter.category ?? payload.fallbackCategory),
         featured: Boolean(translatedFrontmatter.featured ?? false),
         seoTitle:
           typeof translatedFrontmatter.seoTitle === "string"
