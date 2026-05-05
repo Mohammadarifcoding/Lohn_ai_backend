@@ -124,11 +124,17 @@ Return ONLY raw MDX content.
 Do not wrap output in code fences.
 Must include YAML frontmatter at top with keys:
 title, excerpt, date, author, category, featured, seoTitle, seoDescription
-Must include at least one markdown table.
-Prefer using interactive blocks when naturally relevant:
+Use markdown tables only when they genuinely improve the article, such as comparisons, decision criteria, checklists, or process mapping.
+Use interactive blocks only when naturally relevant:
 <Highlight>...</Highlight>, <Callout ...>...</Callout>, <SectionDivider ... />
-Do not force component usage if it harms readability.
+Do not force tables or components if they make the article feel templated.
 If a year is mentioned, use the provided current_year value and avoid outdated years.
+Follow the provided structure_variant exactly when present, and make each draft visibly different in section order, pacing, and content pattern.
+Respect structure_variant.table_policy exactly. If it says to avoid markdown tables, do not include a markdown table.
+Do not reuse the same table/callout/section-divider pattern across drafts.
+If recent_blog_structures are provided, avoid repeating their heading sequence, intro style, and MDX block pattern.
+Write a complete article. Do not stop mid-sentence, mid-list, inside a table, or inside an MDX component.
+Aim for the requested word count from requirement_summary.constraints.word_count unless the input explicitly asks for a shorter article.
 
 Title and excerpt rules:
 
@@ -138,6 +144,7 @@ Do not use a formulaic "Title: Subtitle" pattern unless the subtitle is genuinel
 Do not use spaced hyphen separators like " - " in title, seoTitle, or excerpt.
 Do not use clickbait or generic content-marketing titles such as:
 "The Ultimate Guide", "Everything You Need to Know", "Complete Guide", or "X vs Y: Which Is Best".
+Also avoid German equivalents such as "ultimativ", "Alles was Sie wissen müssen", "vollständiger Leitfaden", or "kompletter Leitfaden".
 Avoid generic title or excerpt phrasing such as:
 "Best Practices", "Top Tips", "Key Strategies", "Unlock", or "Mastering"
 unless the wording is unusually concrete and specific to the topic.
@@ -151,6 +158,8 @@ Use natural sentence rhythm and practical examples in German.
 Write like an experienced team sharing applied guidance.
 Use "wir" or "unser Team" naturally where appropriate.
 Vary opening style across drafts; do not use templated openers such as "Picture this:", "Imagine this:", or "Let's dive in".
+Avoid generic repeated section headings such as "Vorteile", "Best Practices", "Fazit", "Warum es wichtig ist", or "Nächste Schritte" unless they are made specific to the topic.
+Prefer concrete topic-specific headings that make the article feel written for this exact brief.
 Prefer plain language over vague corporate buzzwords.
 Avoid confusing filler words such as: leverage, robust, seamless, synergy, paradigm, transformative, utilize.
 Use colons only when they clearly improve readability; avoid repeated colon-heavy sentence patterns.

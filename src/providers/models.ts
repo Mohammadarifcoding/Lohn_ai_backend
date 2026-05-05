@@ -7,7 +7,7 @@ const gpt4o = new ChatOpenAI({
   temperature: 0.3,
   maxRetries: 2,
   timeout: 30000,
-  maxTokens: 1500,
+  maxTokens: 7000,
   topP: 0.9,
   frequencyPenalty: 0.2,
   configuration: {
@@ -33,7 +33,7 @@ const claude = new ChatOpenAI({
   temperature: 0.7,
   maxRetries: 2,
   timeout: 60000,
-  maxTokens: 2500,
+  maxTokens: 8000,
   topP: 0.95,
   frequencyPenalty: 0.3,
   configuration: {

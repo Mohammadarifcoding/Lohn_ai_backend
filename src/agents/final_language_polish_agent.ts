@@ -20,6 +20,30 @@ function hasHeadingStructure(content: string): boolean {
   return h2Count >= 3;
 }
 
+function estimateWordCount(text: string): number {
+  return text
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0).length;
+}
+
+function hasAbruptEnding(content: string): boolean {
+  const lines = content
+    .trim()
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const lastLine = lines[lines.length - 1] ?? "";
+  const lastText = content.trim();
+
+  return (
+    /[,:;]$/.test(lastText) ||
+    /\b(und|oder|aber|weil|wenn|mit|für|von|zu|im|in)$/i.test(lastText) ||
+    lastLine.includes("|") ||
+    /^[-*]\s+/.test(lastLine)
+  );
+}
+
 function hasKnownMdxComponents(content: string): boolean {
   const openCount = (
     content.match(/<(Highlight|Callout|SectionDivider)\b/gi) ?? []
@@ -45,14 +69,14 @@ function validatePolishedContent(content: string): string[] {
   if (!hasHeadingStructure(content)) {
     issues.push("Heading structure degraded after polish");
   }
-  if (!hasTable(content)) {
-    issues.push("Markdown table missing after polish");
-  }
   if (!hasKnownMdxComponents(content)) {
     issues.push("MDX component structure invalid after polish");
   }
   if (/[–—]/.test(content)) {
     issues.push("Contains typography dash characters after polish");
+  }
+  if (hasAbruptEnding(content)) {
+    issues.push("Polished content appears to end abruptly");
   }
 
   return issues;
@@ -121,6 +145,16 @@ export async function runFinalLanguagePolish(
     }
 
     const issues = validatePolishedContent(polished);
+    const originalWordCount = estimateWordCount(original);
+    const polishedWordCount = estimateWordCount(polished);
+    if (hasTable(original) && !hasTable(polished)) {
+      issues.push("Markdown table lost after polish");
+    }
+    if (originalWordCount >= 600 && polishedWordCount < Math.ceil(originalWordCount * 0.9)) {
+      issues.push(
+        `Polished content shrank below 90% of original length (${polishedWordCount}/${originalWordCount} words)`,
+      );
+    }
     if (issues.length > 0) {
       return {
         final_blog: original,

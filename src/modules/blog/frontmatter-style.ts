@@ -3,6 +3,10 @@ const HARD_TITLE_PATTERNS = [
   /\beverything\s+you\s+need\s+to\s+know\b/i,
   /\bcomplete\s+guide\b/i,
   /\bvs\.?\b.*:\s*which\s+is\s+best\b/i,
+  /\bultimative[rsn]?\b/i,
+  /\balles\s+was\s+sie\s+wissen\s+müssen\b/i,
+  /\bvollständige[rsn]?\s+leitfaden\b/i,
+  /\bkomplette[rsn]?\s+leitfaden\b/i,
 ];
 
 const SOFT_MARKETING_PATTERNS = [
@@ -11,6 +15,9 @@ const SOFT_MARKETING_PATTERNS = [
   /\bkey\s+strateg(?:y|ies)\b/i,
   /\bunlock\b/i,
   /\bmastering\b/i,
+  /\bbeste\s+praktiken\b/i,
+  /\btop\s+tipps\b/i,
+  /\bmeistern\b/i,
 ];
 
 const GENERIC_HEADLINE_PATTERNS = [

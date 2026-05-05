@@ -39,6 +39,7 @@ interface Config {
   ADMIN_EMAIL: string;
   ADMIN_PASSWORD: string;
   TRIGGER_SECRET_KEY?: string;
+  BLOG_RESEARCH_CACHE_ENABLED: boolean;
 }
 
 function getEnvVar(key: string, fallback?: string): string {
@@ -55,6 +56,15 @@ function getOptionalEnvVar(key: string): string | undefined {
     return undefined;
   }
   return value;
+}
+
+function getBooleanEnvVar(key: string, fallback = false): boolean {
+  const value = process.env[key];
+  if (!value) {
+    return fallback;
+  }
+
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
 }
 
 export const config: Config = {
@@ -79,6 +89,10 @@ export const config: Config = {
   ADMIN_EMAIL: getEnvVar("ADMIN_EMAIL", "admin@local.dev"),
   ADMIN_PASSWORD: getEnvVar("ADMIN_PASSWORD", "Admin@12345678"),
   TRIGGER_SECRET_KEY: getOptionalEnvVar("TRIGGER_SECRET_KEY"),
+  BLOG_RESEARCH_CACHE_ENABLED: getBooleanEnvVar(
+    "BLOG_RESEARCH_CACHE_ENABLED",
+    false,
+  ),
 };
 
 export const isDev = config.NODE_ENV === "development";

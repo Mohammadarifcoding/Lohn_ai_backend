@@ -9,6 +9,10 @@ import {
 
 const APPROVAL_THRESHOLD = 8;
 
+type Requirement = NonNullable<
+  ReturnType<typeof BlogAgentStateSchema.parse>["requirement"]
+>;
+
 function estimateWordCount(text: string): number {
   return text
     .split(/\s+/)
@@ -60,7 +64,49 @@ function countMatches(text: string, regex: RegExp): number {
   return (text.match(regex) ?? []).length;
 }
 
-function evaluateDraftOnce(draft: Draft, draftIndex: number): Evaluation {
+function getMinimumWordCount(requirement?: Requirement): number {
+  const requested = requirement?.constraints.word_count;
+  if (requested && Number.isFinite(requested) && requested > 0) {
+    return Math.max(500, Math.floor(requested * 0.75));
+  }
+
+  if (requirement?.depth_level === "high") {
+    return 1300;
+  }
+  if (requirement?.depth_level === "medium") {
+    return 950;
+  }
+  return 650;
+}
+
+function getHeadings(content: string): string[] {
+  return (content.match(/^##\s+(.+)$/gm) ?? [])
+    .map((heading) => heading.replace(/^##\s+/, "").trim())
+    .filter(Boolean);
+}
+
+function hasAbruptEnding(content: string): boolean {
+  const lines = content
+    .trim()
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const lastLine = lines[lines.length - 1] ?? "";
+  const lastText = content.trim();
+
+  return (
+    /[,:;]$/.test(lastText) ||
+    /\b(und|oder|aber|weil|wenn|mit|für|von|zu|im|in)$/i.test(lastText) ||
+    lastLine.includes("|") ||
+    /^[-*]\s+/.test(lastLine)
+  );
+}
+
+function evaluateDraftOnce(
+  draft: Draft,
+  draftIndex: number,
+  requirement?: Requirement,
+): Evaluation {
   let score = 10;
   const issues: string[] = [];
   const improvements: string[] = [];
@@ -100,12 +146,6 @@ function evaluateDraftOnce(draft: Draft, draftIndex: number): Evaluation {
     improvements.push("Add clearer section structure with at least three H2 headings");
   }
 
-  if (!/\|\s*[^\n]+\|\s*\n\|\s*[-:]+\s*\|/.test(content)) {
-    score -= 1;
-    issues.push("Missing markdown table");
-    improvements.push("Add at least one comparison or target-state table");
-  }
-
   const frontmatterAnalysis = analyzeFrontmatterStyle(content);
   if (frontmatterAnalysis.hardIssues.length > 0) {
     score -= Math.min(1.8, frontmatterAnalysis.hardIssues.length * 0.6);
@@ -118,10 +158,28 @@ function evaluateDraftOnce(draft: Draft, draftIndex: number): Evaluation {
     improvements.push("Make the title and excerpt more specific and less templated");
   }
 
-  if (wordCount < 900) {
+  const minimumWordCount = getMinimumWordCount(requirement);
+  if (wordCount < minimumWordCount) {
     score -= 1;
-    issues.push("Draft is shorter than expected depth");
+    issues.push(`Draft is shorter than expected depth (${wordCount}/${minimumWordCount} words)`);
     improvements.push("Expand practical examples and section depth");
+  }
+
+  if (hasAbruptEnding(content)) {
+    score -= 2;
+    issues.push("Draft appears to end abruptly");
+    improvements.push("Complete the final section and close the article with a full sentence");
+  }
+
+  const genericHeadings = getHeadings(content).filter((heading) =>
+    /^(vorteile|best practices|fazit|warum es wichtig ist|nächste schritte|zusammenfassung|einleitung)$/i.test(
+      heading,
+    ),
+  );
+  if (genericHeadings.length > 0) {
+    score -= Math.min(1, genericHeadings.length * 0.25);
+    issues.push(`Uses generic repeated headings: ${genericHeadings.join(", ")}`);
+    improvements.push("Use concrete section headings specific to this blog topic");
   }
 
   if (semicolonPerThousandWords > 3) {
@@ -321,7 +379,11 @@ const finalEvaluationAgent: GraphNode<typeof BlogAgentStateSchema> = async (
   }
 
   const refinedDraft = applySingleRefinement(topDraft, topEvaluation);
-  const refinedEvaluation = evaluateDraftOnce(refinedDraft, topEvaluation.draft_index);
+  const refinedEvaluation = evaluateDraftOnce(
+    refinedDraft,
+    topEvaluation.draft_index,
+    state.requirement,
+  );
   const mergedEvaluations = evaluations.map((evaluation) =>
     evaluation.draft_index === refinedEvaluation.draft_index
       ? refinedEvaluation

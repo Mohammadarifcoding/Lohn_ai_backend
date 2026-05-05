@@ -14,6 +14,7 @@ import {
   type SearchHit,
 } from "../types/blog/research.js";
 import { BlogAgentStateSchema } from "../types/blog/workflow.js";
+import { config } from "../config/index.js";
 import { tavilyClient } from "../providers/tavily.js";
 import { logger } from "../utils/logger.js";
 
@@ -231,6 +232,7 @@ const researchAgent: GraphNode<typeof BlogAgentStateSchema> = async (
   let tavilyCallsUsed = 0;
   let cacheHits = 0;
   let cacheMisses = 0;
+  const cacheEnabled = config.BLOG_RESEARCH_CACHE_ENABLED;
 
   // Multi-round strategy allows broader reformulations while still honoring the global budget cap.
   for (let round = 0; round < strategies.length; round += 1) {
@@ -247,20 +249,24 @@ const researchAgent: GraphNode<typeof BlogAgentStateSchema> = async (
 
     for (const query of approvedQueries) {
       const normalizedQuery = normalizeQuery(query);
-      const cached = await getCachedByQuery(normalizedQuery);
+      const cached = cacheEnabled
+        ? await getCachedByQuery(normalizedQuery)
+        : { fresh: [], stale: [] };
 
       // Fresh cache is always preferred over network calls.
-      if (cached.fresh.length > 0) {
+      if (cacheEnabled && cached.fresh.length > 0) {
         roundResults.push(...cached.fresh);
         cacheHits += 1;
         continue;
       }
 
-      cacheMisses += 1;
+      if (cacheEnabled) {
+        cacheMisses += 1;
+      }
 
       // Hard cap on paid web calls. If exhausted, only stale fallback may still be used.
       if (tavilyCallsUsed >= MAX_TAVILY_CALLS_PER_REQUEST) {
-        if (cached.stale.length > 0) {
+        if (cacheEnabled && cached.stale.length > 0) {
           roundResults.push(...cached.stale);
           cacheHits += 1;
         }
@@ -294,7 +300,9 @@ const researchAgent: GraphNode<typeof BlogAgentStateSchema> = async (
         roundResults.push(...freshWebResults);
 
         // Persist Tavily responses so future identical queries can be served from Pinecone.
-        await upsertQueryResults(normalizedQuery, freshWebResults);
+        if (cacheEnabled) {
+          await upsertQueryResults(normalizedQuery, freshWebResults);
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";
         logger.warn("Research query failed", {
@@ -304,7 +312,7 @@ const researchAgent: GraphNode<typeof BlogAgentStateSchema> = async (
         });
 
         // If Tavily fails, stale cache is allowed as an explicit fallback path.
-        if (cached.stale.length > 0) {
+        if (cacheEnabled && cached.stale.length > 0) {
           roundResults.push(...cached.stale);
           cacheHits += 1;
         }
