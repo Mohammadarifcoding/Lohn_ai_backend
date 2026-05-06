@@ -30,6 +30,7 @@ interface PersistRunParams {
   startedAt?: Date;
   heartbeatAt?: Date;
   inputPayload?: BlogInput;
+  englishDrafts?: string[];
 }
 
 interface SelectDraftParams {
@@ -61,6 +62,7 @@ export interface PersistedRunSnapshot {
     final_polish_applied?: boolean;
     final_polish_warning?: string;
     iteration_count?: number;
+    english_drafts?: string[];
   };
 }
 
@@ -131,6 +133,7 @@ export async function persistBlogRun(params: PersistRunParams): Promise<void> {
         finalBlog: params.finalBlog,
         finalPolishApplied: params.finalPolishApplied,
         finalPolishWarning: params.finalPolishWarning,
+        englishDrafts: params.englishDrafts ? params.englishDrafts as never : undefined,
         workflowStatus: params.workflowStatus,
         error: params.error,
         triggerRunId: params.triggerRunId,
@@ -158,6 +161,7 @@ export async function persistBlogRun(params: PersistRunParams): Promise<void> {
         finalBlog: params.finalBlog,
         finalPolishApplied: params.finalPolishApplied,
         finalPolishWarning: params.finalPolishWarning,
+        englishDrafts: params.englishDrafts ? params.englishDrafts as never : undefined,
         workflowStatus: params.workflowStatus,
         error: params.error,
         triggerRunId: params.triggerRunId,
@@ -491,6 +495,7 @@ export async function getPersistedRunSnapshot(
         workflowStatus: true,
         finalPolishApplied: true,
         finalPolishWarning: true,
+        englishDrafts: true,
         selectedDraftIndex: true,
         finalBlog: true,
         heartbeatAt: true,
@@ -586,6 +591,7 @@ export async function getPersistedRunSnapshot(
       final_polish_applied: run.finalPolishApplied ?? undefined,
       final_polish_warning: run.finalPolishWarning ?? undefined,
       iteration_count: run.iterationCount ?? undefined,
+      english_drafts: Array.isArray(run.englishDrafts) ? run.englishDrafts as string[] : undefined,
     },
   };
 }

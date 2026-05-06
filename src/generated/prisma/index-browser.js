@@ -219,6 +219,9 @@ exports.Prisma.BlogBriefScalarFieldEnum = {
   clientHints: 'clientHints',
   category: 'category',
   status: 'status',
+  englishDrafts: 'englishDrafts',
+  scheduledPublishAt: 'scheduledPublishAt',
+  coverImage: 'coverImage',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -227,6 +230,7 @@ exports.Prisma.BlogDraftEditScalarFieldEnum = {
   id: 'id',
   briefId: 'briefId',
   draftIndex: 'draftIndex',
+  locale: 'locale',
   content: 'content',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -250,6 +254,8 @@ exports.Prisma.BlogPostScalarFieldEnum = {
   sourceRequestId: 'sourceRequestId',
   translationGroupId: 'translationGroupId',
   publishedAt: 'publishedAt',
+  scheduledPublishAt: 'scheduledPublishAt',
+  visibility: 'visibility',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -271,6 +277,7 @@ exports.Prisma.BlogGenerationRunScalarFieldEnum = {
   finalBlog: 'finalBlog',
   finalPolishApplied: 'finalPolishApplied',
   finalPolishWarning: 'finalPolishWarning',
+  englishDrafts: 'englishDrafts',
   queuedAt: 'queuedAt',
   startedAt: 'startedAt',
   heartbeatAt: 'heartbeatAt',

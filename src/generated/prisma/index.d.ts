@@ -9733,6 +9733,8 @@ export namespace Prisma {
     clientHints: string | null
     category: string | null
     status: $Enums.BlogBriefStatus | null
+    scheduledPublishAt: Date | null
+    coverImage: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -9763,6 +9765,8 @@ export namespace Prisma {
     clientHints: string | null
     category: string | null
     status: $Enums.BlogBriefStatus | null
+    scheduledPublishAt: Date | null
+    coverImage: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -9796,6 +9800,9 @@ export namespace Prisma {
     clientHints: number
     category: number
     status: number
+    englishDrafts: number
+    scheduledPublishAt: number
+    coverImage: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -9836,6 +9843,8 @@ export namespace Prisma {
     clientHints?: true
     category?: true
     status?: true
+    scheduledPublishAt?: true
+    coverImage?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -9866,6 +9875,8 @@ export namespace Prisma {
     clientHints?: true
     category?: true
     status?: true
+    scheduledPublishAt?: true
+    coverImage?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -9899,6 +9910,9 @@ export namespace Prisma {
     clientHints?: true
     category?: true
     status?: true
+    englishDrafts?: true
+    scheduledPublishAt?: true
+    coverImage?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -10019,6 +10033,9 @@ export namespace Prisma {
     clientHints: string | null
     category: string | null
     status: $Enums.BlogBriefStatus
+    englishDrafts: JsonValue | null
+    scheduledPublishAt: Date | null
+    coverImage: string | null
     createdAt: Date
     updatedAt: Date
     _count: BlogBriefCountAggregateOutputType | null
@@ -10071,6 +10088,9 @@ export namespace Prisma {
     clientHints?: boolean
     category?: boolean
     status?: boolean
+    englishDrafts?: boolean
+    scheduledPublishAt?: boolean
+    coverImage?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     draftEdits?: boolean | BlogBrief$draftEditsArgs<ExtArgs>
@@ -10106,6 +10126,9 @@ export namespace Prisma {
     clientHints?: boolean
     category?: boolean
     status?: boolean
+    englishDrafts?: boolean
+    scheduledPublishAt?: boolean
+    coverImage?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["blogBrief"]>
@@ -10139,6 +10162,9 @@ export namespace Prisma {
     clientHints?: boolean
     category?: boolean
     status?: boolean
+    englishDrafts?: boolean
+    scheduledPublishAt?: boolean
+    coverImage?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["blogBrief"]>
@@ -10172,11 +10198,14 @@ export namespace Prisma {
     clientHints?: boolean
     category?: boolean
     status?: boolean
+    englishDrafts?: boolean
+    scheduledPublishAt?: boolean
+    coverImage?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type BlogBriefOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "topic" | "goal" | "audience" | "userContext" | "tone" | "keywords" | "includeServices" | "constraints" | "depth" | "backendRequestId" | "selectedDraftIndex" | "finalDraftContent" | "slug" | "locale" | "publishedAt" | "translationStatus" | "translationError" | "translationTriggerRunId" | "englishSlug" | "translationStartedAt" | "translationCompletedAt" | "generationError" | "idea" | "clientHints" | "category" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["blogBrief"]>
+  export type BlogBriefOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "topic" | "goal" | "audience" | "userContext" | "tone" | "keywords" | "includeServices" | "constraints" | "depth" | "backendRequestId" | "selectedDraftIndex" | "finalDraftContent" | "slug" | "locale" | "publishedAt" | "translationStatus" | "translationError" | "translationTriggerRunId" | "englishSlug" | "translationStartedAt" | "translationCompletedAt" | "generationError" | "idea" | "clientHints" | "category" | "status" | "englishDrafts" | "scheduledPublishAt" | "coverImage" | "createdAt" | "updatedAt", ExtArgs["result"]["blogBrief"]>
   export type BlogBriefInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     draftEdits?: boolean | BlogBrief$draftEditsArgs<ExtArgs>
     _count?: boolean | BlogBriefCountOutputTypeDefaultArgs<ExtArgs>
@@ -10218,6 +10247,9 @@ export namespace Prisma {
       clientHints: string | null
       category: string | null
       status: $Enums.BlogBriefStatus
+      englishDrafts: Prisma.JsonValue | null
+      scheduledPublishAt: Date | null
+      coverImage: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["blogBrief"]>
@@ -10672,6 +10704,9 @@ export namespace Prisma {
     readonly clientHints: FieldRef<"BlogBrief", 'String'>
     readonly category: FieldRef<"BlogBrief", 'String'>
     readonly status: FieldRef<"BlogBrief", 'BlogBriefStatus'>
+    readonly englishDrafts: FieldRef<"BlogBrief", 'Json'>
+    readonly scheduledPublishAt: FieldRef<"BlogBrief", 'DateTime'>
+    readonly coverImage: FieldRef<"BlogBrief", 'String'>
     readonly createdAt: FieldRef<"BlogBrief", 'DateTime'>
     readonly updatedAt: FieldRef<"BlogBrief", 'DateTime'>
   }
@@ -11128,6 +11163,7 @@ export namespace Prisma {
     id: string | null
     briefId: string | null
     draftIndex: number | null
+    locale: string | null
     content: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -11137,6 +11173,7 @@ export namespace Prisma {
     id: string | null
     briefId: string | null
     draftIndex: number | null
+    locale: string | null
     content: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -11146,6 +11183,7 @@ export namespace Prisma {
     id: number
     briefId: number
     draftIndex: number
+    locale: number
     content: number
     createdAt: number
     updatedAt: number
@@ -11165,6 +11203,7 @@ export namespace Prisma {
     id?: true
     briefId?: true
     draftIndex?: true
+    locale?: true
     content?: true
     createdAt?: true
     updatedAt?: true
@@ -11174,6 +11213,7 @@ export namespace Prisma {
     id?: true
     briefId?: true
     draftIndex?: true
+    locale?: true
     content?: true
     createdAt?: true
     updatedAt?: true
@@ -11183,6 +11223,7 @@ export namespace Prisma {
     id?: true
     briefId?: true
     draftIndex?: true
+    locale?: true
     content?: true
     createdAt?: true
     updatedAt?: true
@@ -11279,6 +11320,7 @@ export namespace Prisma {
     id: string
     briefId: string
     draftIndex: number
+    locale: string
     content: string
     createdAt: Date
     updatedAt: Date
@@ -11307,6 +11349,7 @@ export namespace Prisma {
     id?: boolean
     briefId?: boolean
     draftIndex?: boolean
+    locale?: boolean
     content?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -11317,6 +11360,7 @@ export namespace Prisma {
     id?: boolean
     briefId?: boolean
     draftIndex?: boolean
+    locale?: boolean
     content?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -11327,6 +11371,7 @@ export namespace Prisma {
     id?: boolean
     briefId?: boolean
     draftIndex?: boolean
+    locale?: boolean
     content?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -11337,12 +11382,13 @@ export namespace Prisma {
     id?: boolean
     briefId?: boolean
     draftIndex?: boolean
+    locale?: boolean
     content?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type BlogDraftEditOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "briefId" | "draftIndex" | "content" | "createdAt" | "updatedAt", ExtArgs["result"]["blogDraftEdit"]>
+  export type BlogDraftEditOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "briefId" | "draftIndex" | "locale" | "content" | "createdAt" | "updatedAt", ExtArgs["result"]["blogDraftEdit"]>
   export type BlogDraftEditInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     brief?: boolean | BlogBriefDefaultArgs<ExtArgs>
   }
@@ -11362,6 +11408,7 @@ export namespace Prisma {
       id: string
       briefId: string
       draftIndex: number
+      locale: string
       content: string
       createdAt: Date
       updatedAt: Date
@@ -11792,6 +11839,7 @@ export namespace Prisma {
     readonly id: FieldRef<"BlogDraftEdit", 'String'>
     readonly briefId: FieldRef<"BlogDraftEdit", 'String'>
     readonly draftIndex: FieldRef<"BlogDraftEdit", 'Int'>
+    readonly locale: FieldRef<"BlogDraftEdit", 'String'>
     readonly content: FieldRef<"BlogDraftEdit", 'String'>
     readonly createdAt: FieldRef<"BlogDraftEdit", 'DateTime'>
     readonly updatedAt: FieldRef<"BlogDraftEdit", 'DateTime'>
@@ -12236,6 +12284,8 @@ export namespace Prisma {
     sourceRequestId: string | null
     translationGroupId: string | null
     publishedAt: Date | null
+    scheduledPublishAt: Date | null
+    visibility: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12257,6 +12307,8 @@ export namespace Prisma {
     sourceRequestId: string | null
     translationGroupId: string | null
     publishedAt: Date | null
+    scheduledPublishAt: Date | null
+    visibility: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12279,6 +12331,8 @@ export namespace Prisma {
     sourceRequestId: number
     translationGroupId: number
     publishedAt: number
+    scheduledPublishAt: number
+    visibility: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -12302,6 +12356,8 @@ export namespace Prisma {
     sourceRequestId?: true
     translationGroupId?: true
     publishedAt?: true
+    scheduledPublishAt?: true
+    visibility?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12323,6 +12379,8 @@ export namespace Prisma {
     sourceRequestId?: true
     translationGroupId?: true
     publishedAt?: true
+    scheduledPublishAt?: true
+    visibility?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12345,6 +12403,8 @@ export namespace Prisma {
     sourceRequestId?: true
     translationGroupId?: true
     publishedAt?: true
+    scheduledPublishAt?: true
+    visibility?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -12440,6 +12500,8 @@ export namespace Prisma {
     sourceRequestId: string | null
     translationGroupId: string | null
     publishedAt: Date
+    scheduledPublishAt: Date | null
+    visibility: string
     createdAt: Date
     updatedAt: Date
     _count: BlogPostCountAggregateOutputType | null
@@ -12479,6 +12541,8 @@ export namespace Prisma {
     sourceRequestId?: boolean
     translationGroupId?: boolean
     publishedAt?: boolean
+    scheduledPublishAt?: boolean
+    visibility?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["blogPost"]>
@@ -12501,6 +12565,8 @@ export namespace Prisma {
     sourceRequestId?: boolean
     translationGroupId?: boolean
     publishedAt?: boolean
+    scheduledPublishAt?: boolean
+    visibility?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["blogPost"]>
@@ -12523,6 +12589,8 @@ export namespace Prisma {
     sourceRequestId?: boolean
     translationGroupId?: boolean
     publishedAt?: boolean
+    scheduledPublishAt?: boolean
+    visibility?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["blogPost"]>
@@ -12545,11 +12613,13 @@ export namespace Prisma {
     sourceRequestId?: boolean
     translationGroupId?: boolean
     publishedAt?: boolean
+    scheduledPublishAt?: boolean
+    visibility?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type BlogPostOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "locale" | "title" | "excerpt" | "author" | "category" | "featured" | "seoTitle" | "seoDescription" | "coverImage" | "frontmatterJson" | "mdxContent" | "sourceBriefId" | "sourceRequestId" | "translationGroupId" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["blogPost"]>
+  export type BlogPostOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "locale" | "title" | "excerpt" | "author" | "category" | "featured" | "seoTitle" | "seoDescription" | "coverImage" | "frontmatterJson" | "mdxContent" | "sourceBriefId" | "sourceRequestId" | "translationGroupId" | "publishedAt" | "scheduledPublishAt" | "visibility" | "createdAt" | "updatedAt", ExtArgs["result"]["blogPost"]>
 
   export type $BlogPostPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "BlogPost"
@@ -12572,6 +12642,8 @@ export namespace Prisma {
       sourceRequestId: string | null
       translationGroupId: string | null
       publishedAt: Date
+      scheduledPublishAt: Date | null
+      visibility: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["blogPost"]>
@@ -13014,6 +13086,8 @@ export namespace Prisma {
     readonly sourceRequestId: FieldRef<"BlogPost", 'String'>
     readonly translationGroupId: FieldRef<"BlogPost", 'String'>
     readonly publishedAt: FieldRef<"BlogPost", 'DateTime'>
+    readonly scheduledPublishAt: FieldRef<"BlogPost", 'DateTime'>
+    readonly visibility: FieldRef<"BlogPost", 'String'>
     readonly createdAt: FieldRef<"BlogPost", 'DateTime'>
     readonly updatedAt: FieldRef<"BlogPost", 'DateTime'>
   }
@@ -13473,6 +13547,7 @@ export namespace Prisma {
     finalBlog: number
     finalPolishApplied: number
     finalPolishWarning: number
+    englishDrafts: number
     queuedAt: number
     startedAt: number
     heartbeatAt: number
@@ -13562,6 +13637,7 @@ export namespace Prisma {
     finalBlog?: true
     finalPolishApplied?: true
     finalPolishWarning?: true
+    englishDrafts?: true
     queuedAt?: true
     startedAt?: true
     heartbeatAt?: true
@@ -13674,6 +13750,7 @@ export namespace Prisma {
     finalBlog: string | null
     finalPolishApplied: boolean | null
     finalPolishWarning: string | null
+    englishDrafts: JsonValue | null
     queuedAt: Date | null
     startedAt: Date | null
     heartbeatAt: Date | null
@@ -13718,6 +13795,7 @@ export namespace Prisma {
     finalBlog?: boolean
     finalPolishApplied?: boolean
     finalPolishWarning?: boolean
+    englishDrafts?: boolean
     queuedAt?: boolean
     startedAt?: boolean
     heartbeatAt?: boolean
@@ -13747,6 +13825,7 @@ export namespace Prisma {
     finalBlog?: boolean
     finalPolishApplied?: boolean
     finalPolishWarning?: boolean
+    englishDrafts?: boolean
     queuedAt?: boolean
     startedAt?: boolean
     heartbeatAt?: boolean
@@ -13773,6 +13852,7 @@ export namespace Prisma {
     finalBlog?: boolean
     finalPolishApplied?: boolean
     finalPolishWarning?: boolean
+    englishDrafts?: boolean
     queuedAt?: boolean
     startedAt?: boolean
     heartbeatAt?: boolean
@@ -13799,6 +13879,7 @@ export namespace Prisma {
     finalBlog?: boolean
     finalPolishApplied?: boolean
     finalPolishWarning?: boolean
+    englishDrafts?: boolean
     queuedAt?: boolean
     startedAt?: boolean
     heartbeatAt?: boolean
@@ -13807,7 +13888,7 @@ export namespace Prisma {
     completedAt?: boolean
   }
 
-  export type blogGenerationRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "requestId" | "userId" | "topic" | "inputPayload" | "status" | "triggerRunId" | "retryCount" | "workflowStatus" | "error" | "durationMs" | "iterationCount" | "selectedDraftIndex" | "finalBlog" | "finalPolishApplied" | "finalPolishWarning" | "queuedAt" | "startedAt" | "heartbeatAt" | "createdAt" | "updatedAt" | "completedAt", ExtArgs["result"]["blogGenerationRun"]>
+  export type blogGenerationRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "requestId" | "userId" | "topic" | "inputPayload" | "status" | "triggerRunId" | "retryCount" | "workflowStatus" | "error" | "durationMs" | "iterationCount" | "selectedDraftIndex" | "finalBlog" | "finalPolishApplied" | "finalPolishWarning" | "englishDrafts" | "queuedAt" | "startedAt" | "heartbeatAt" | "createdAt" | "updatedAt" | "completedAt", ExtArgs["result"]["blogGenerationRun"]>
   export type blogGenerationRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | blogGenerationRun$userArgs<ExtArgs>
     drafts?: boolean | blogGenerationRun$draftsArgs<ExtArgs>
@@ -13845,6 +13926,7 @@ export namespace Prisma {
       finalBlog: string | null
       finalPolishApplied: boolean | null
       finalPolishWarning: string | null
+      englishDrafts: Prisma.JsonValue | null
       queuedAt: Date | null
       startedAt: Date | null
       heartbeatAt: Date | null
@@ -14293,6 +14375,7 @@ export namespace Prisma {
     readonly finalBlog: FieldRef<"blogGenerationRun", 'String'>
     readonly finalPolishApplied: FieldRef<"blogGenerationRun", 'Boolean'>
     readonly finalPolishWarning: FieldRef<"blogGenerationRun", 'String'>
+    readonly englishDrafts: FieldRef<"blogGenerationRun", 'Json'>
     readonly queuedAt: FieldRef<"blogGenerationRun", 'DateTime'>
     readonly startedAt: FieldRef<"blogGenerationRun", 'DateTime'>
     readonly heartbeatAt: FieldRef<"blogGenerationRun", 'DateTime'>
@@ -17275,6 +17358,9 @@ export namespace Prisma {
     clientHints: 'clientHints',
     category: 'category',
     status: 'status',
+    englishDrafts: 'englishDrafts',
+    scheduledPublishAt: 'scheduledPublishAt',
+    coverImage: 'coverImage',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -17286,6 +17372,7 @@ export namespace Prisma {
     id: 'id',
     briefId: 'briefId',
     draftIndex: 'draftIndex',
+    locale: 'locale',
     content: 'content',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -17312,6 +17399,8 @@ export namespace Prisma {
     sourceRequestId: 'sourceRequestId',
     translationGroupId: 'translationGroupId',
     publishedAt: 'publishedAt',
+    scheduledPublishAt: 'scheduledPublishAt',
+    visibility: 'visibility',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -17336,6 +17425,7 @@ export namespace Prisma {
     finalBlog: 'finalBlog',
     finalPolishApplied: 'finalPolishApplied',
     finalPolishWarning: 'finalPolishWarning',
+    englishDrafts: 'englishDrafts',
     queuedAt: 'queuedAt',
     startedAt: 'startedAt',
     heartbeatAt: 'heartbeatAt',
@@ -18011,6 +18101,9 @@ export namespace Prisma {
     clientHints?: StringNullableFilter<"BlogBrief"> | string | null
     category?: StringNullableFilter<"BlogBrief"> | string | null
     status?: EnumBlogBriefStatusFilter<"BlogBrief"> | $Enums.BlogBriefStatus
+    englishDrafts?: JsonNullableFilter<"BlogBrief">
+    scheduledPublishAt?: DateTimeNullableFilter<"BlogBrief"> | Date | string | null
+    coverImage?: StringNullableFilter<"BlogBrief"> | string | null
     createdAt?: DateTimeFilter<"BlogBrief"> | Date | string
     updatedAt?: DateTimeFilter<"BlogBrief"> | Date | string
     draftEdits?: BlogDraftEditListRelationFilter
@@ -18045,6 +18138,9 @@ export namespace Prisma {
     clientHints?: SortOrderInput | SortOrder
     category?: SortOrderInput | SortOrder
     status?: SortOrder
+    englishDrafts?: SortOrderInput | SortOrder
+    scheduledPublishAt?: SortOrderInput | SortOrder
+    coverImage?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     draftEdits?: BlogDraftEditOrderByRelationAggregateInput
@@ -18082,6 +18178,9 @@ export namespace Prisma {
     clientHints?: StringNullableFilter<"BlogBrief"> | string | null
     category?: StringNullableFilter<"BlogBrief"> | string | null
     status?: EnumBlogBriefStatusFilter<"BlogBrief"> | $Enums.BlogBriefStatus
+    englishDrafts?: JsonNullableFilter<"BlogBrief">
+    scheduledPublishAt?: DateTimeNullableFilter<"BlogBrief"> | Date | string | null
+    coverImage?: StringNullableFilter<"BlogBrief"> | string | null
     createdAt?: DateTimeFilter<"BlogBrief"> | Date | string
     updatedAt?: DateTimeFilter<"BlogBrief"> | Date | string
     draftEdits?: BlogDraftEditListRelationFilter
@@ -18116,6 +18215,9 @@ export namespace Prisma {
     clientHints?: SortOrderInput | SortOrder
     category?: SortOrderInput | SortOrder
     status?: SortOrder
+    englishDrafts?: SortOrderInput | SortOrder
+    scheduledPublishAt?: SortOrderInput | SortOrder
+    coverImage?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: BlogBriefCountOrderByAggregateInput
@@ -18157,6 +18259,9 @@ export namespace Prisma {
     clientHints?: StringNullableWithAggregatesFilter<"BlogBrief"> | string | null
     category?: StringNullableWithAggregatesFilter<"BlogBrief"> | string | null
     status?: EnumBlogBriefStatusWithAggregatesFilter<"BlogBrief"> | $Enums.BlogBriefStatus
+    englishDrafts?: JsonNullableWithAggregatesFilter<"BlogBrief">
+    scheduledPublishAt?: DateTimeNullableWithAggregatesFilter<"BlogBrief"> | Date | string | null
+    coverImage?: StringNullableWithAggregatesFilter<"BlogBrief"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"BlogBrief"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"BlogBrief"> | Date | string
   }
@@ -18168,6 +18273,7 @@ export namespace Prisma {
     id?: StringFilter<"BlogDraftEdit"> | string
     briefId?: StringFilter<"BlogDraftEdit"> | string
     draftIndex?: IntFilter<"BlogDraftEdit"> | number
+    locale?: StringFilter<"BlogDraftEdit"> | string
     content?: StringFilter<"BlogDraftEdit"> | string
     createdAt?: DateTimeFilter<"BlogDraftEdit"> | Date | string
     updatedAt?: DateTimeFilter<"BlogDraftEdit"> | Date | string
@@ -18178,6 +18284,7 @@ export namespace Prisma {
     id?: SortOrder
     briefId?: SortOrder
     draftIndex?: SortOrder
+    locale?: SortOrder
     content?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18186,22 +18293,24 @@ export namespace Prisma {
 
   export type BlogDraftEditWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    briefId_draftIndex?: BlogDraftEditBriefIdDraftIndexCompoundUniqueInput
+    briefId_draftIndex_locale?: BlogDraftEditBriefIdDraftIndexLocaleCompoundUniqueInput
     AND?: BlogDraftEditWhereInput | BlogDraftEditWhereInput[]
     OR?: BlogDraftEditWhereInput[]
     NOT?: BlogDraftEditWhereInput | BlogDraftEditWhereInput[]
     briefId?: StringFilter<"BlogDraftEdit"> | string
     draftIndex?: IntFilter<"BlogDraftEdit"> | number
+    locale?: StringFilter<"BlogDraftEdit"> | string
     content?: StringFilter<"BlogDraftEdit"> | string
     createdAt?: DateTimeFilter<"BlogDraftEdit"> | Date | string
     updatedAt?: DateTimeFilter<"BlogDraftEdit"> | Date | string
     brief?: XOR<BlogBriefScalarRelationFilter, BlogBriefWhereInput>
-  }, "id" | "briefId_draftIndex">
+  }, "id" | "briefId_draftIndex_locale">
 
   export type BlogDraftEditOrderByWithAggregationInput = {
     id?: SortOrder
     briefId?: SortOrder
     draftIndex?: SortOrder
+    locale?: SortOrder
     content?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18219,6 +18328,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"BlogDraftEdit"> | string
     briefId?: StringWithAggregatesFilter<"BlogDraftEdit"> | string
     draftIndex?: IntWithAggregatesFilter<"BlogDraftEdit"> | number
+    locale?: StringWithAggregatesFilter<"BlogDraftEdit"> | string
     content?: StringWithAggregatesFilter<"BlogDraftEdit"> | string
     createdAt?: DateTimeWithAggregatesFilter<"BlogDraftEdit"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"BlogDraftEdit"> | Date | string
@@ -18245,6 +18355,8 @@ export namespace Prisma {
     sourceRequestId?: StringNullableFilter<"BlogPost"> | string | null
     translationGroupId?: StringNullableFilter<"BlogPost"> | string | null
     publishedAt?: DateTimeFilter<"BlogPost"> | Date | string
+    scheduledPublishAt?: DateTimeNullableFilter<"BlogPost"> | Date | string | null
+    visibility?: StringFilter<"BlogPost"> | string
     createdAt?: DateTimeFilter<"BlogPost"> | Date | string
     updatedAt?: DateTimeFilter<"BlogPost"> | Date | string
   }
@@ -18267,6 +18379,8 @@ export namespace Prisma {
     sourceRequestId?: SortOrderInput | SortOrder
     translationGroupId?: SortOrderInput | SortOrder
     publishedAt?: SortOrder
+    scheduledPublishAt?: SortOrderInput | SortOrder
+    visibility?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -18293,6 +18407,8 @@ export namespace Prisma {
     sourceRequestId?: StringNullableFilter<"BlogPost"> | string | null
     translationGroupId?: StringNullableFilter<"BlogPost"> | string | null
     publishedAt?: DateTimeFilter<"BlogPost"> | Date | string
+    scheduledPublishAt?: DateTimeNullableFilter<"BlogPost"> | Date | string | null
+    visibility?: StringFilter<"BlogPost"> | string
     createdAt?: DateTimeFilter<"BlogPost"> | Date | string
     updatedAt?: DateTimeFilter<"BlogPost"> | Date | string
   }, "id" | "locale_slug">
@@ -18315,6 +18431,8 @@ export namespace Prisma {
     sourceRequestId?: SortOrderInput | SortOrder
     translationGroupId?: SortOrderInput | SortOrder
     publishedAt?: SortOrder
+    scheduledPublishAt?: SortOrderInput | SortOrder
+    visibility?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: BlogPostCountOrderByAggregateInput
@@ -18343,6 +18461,8 @@ export namespace Prisma {
     sourceRequestId?: StringNullableWithAggregatesFilter<"BlogPost"> | string | null
     translationGroupId?: StringNullableWithAggregatesFilter<"BlogPost"> | string | null
     publishedAt?: DateTimeWithAggregatesFilter<"BlogPost"> | Date | string
+    scheduledPublishAt?: DateTimeNullableWithAggregatesFilter<"BlogPost"> | Date | string | null
+    visibility?: StringWithAggregatesFilter<"BlogPost"> | string
     createdAt?: DateTimeWithAggregatesFilter<"BlogPost"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"BlogPost"> | Date | string
   }
@@ -18367,6 +18487,7 @@ export namespace Prisma {
     finalBlog?: StringNullableFilter<"blogGenerationRun"> | string | null
     finalPolishApplied?: BoolNullableFilter<"blogGenerationRun"> | boolean | null
     finalPolishWarning?: StringNullableFilter<"blogGenerationRun"> | string | null
+    englishDrafts?: JsonNullableFilter<"blogGenerationRun">
     queuedAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
     startedAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
     heartbeatAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
@@ -18395,6 +18516,7 @@ export namespace Prisma {
     finalBlog?: SortOrderInput | SortOrder
     finalPolishApplied?: SortOrderInput | SortOrder
     finalPolishWarning?: SortOrderInput | SortOrder
+    englishDrafts?: SortOrderInput | SortOrder
     queuedAt?: SortOrderInput | SortOrder
     startedAt?: SortOrderInput | SortOrder
     heartbeatAt?: SortOrderInput | SortOrder
@@ -18426,6 +18548,7 @@ export namespace Prisma {
     finalBlog?: StringNullableFilter<"blogGenerationRun"> | string | null
     finalPolishApplied?: BoolNullableFilter<"blogGenerationRun"> | boolean | null
     finalPolishWarning?: StringNullableFilter<"blogGenerationRun"> | string | null
+    englishDrafts?: JsonNullableFilter<"blogGenerationRun">
     queuedAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
     startedAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
     heartbeatAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
@@ -18454,6 +18577,7 @@ export namespace Prisma {
     finalBlog?: SortOrderInput | SortOrder
     finalPolishApplied?: SortOrderInput | SortOrder
     finalPolishWarning?: SortOrderInput | SortOrder
+    englishDrafts?: SortOrderInput | SortOrder
     queuedAt?: SortOrderInput | SortOrder
     startedAt?: SortOrderInput | SortOrder
     heartbeatAt?: SortOrderInput | SortOrder
@@ -18487,6 +18611,7 @@ export namespace Prisma {
     finalBlog?: StringNullableWithAggregatesFilter<"blogGenerationRun"> | string | null
     finalPolishApplied?: BoolNullableWithAggregatesFilter<"blogGenerationRun"> | boolean | null
     finalPolishWarning?: StringNullableWithAggregatesFilter<"blogGenerationRun"> | string | null
+    englishDrafts?: JsonNullableWithAggregatesFilter<"blogGenerationRun">
     queuedAt?: DateTimeNullableWithAggregatesFilter<"blogGenerationRun"> | Date | string | null
     startedAt?: DateTimeNullableWithAggregatesFilter<"blogGenerationRun"> | Date | string | null
     heartbeatAt?: DateTimeNullableWithAggregatesFilter<"blogGenerationRun"> | Date | string | null
@@ -19196,6 +19321,9 @@ export namespace Prisma {
     clientHints?: string | null
     category?: string | null
     status?: $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: Date | string | null
+    coverImage?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     draftEdits?: BlogDraftEditCreateNestedManyWithoutBriefInput
@@ -19230,6 +19358,9 @@ export namespace Prisma {
     clientHints?: string | null
     category?: string | null
     status?: $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: Date | string | null
+    coverImage?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     draftEdits?: BlogDraftEditUncheckedCreateNestedManyWithoutBriefInput
@@ -19264,6 +19395,9 @@ export namespace Prisma {
     clientHints?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumBlogBriefStatusFieldUpdateOperationsInput | $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     draftEdits?: BlogDraftEditUpdateManyWithoutBriefNestedInput
@@ -19298,6 +19432,9 @@ export namespace Prisma {
     clientHints?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumBlogBriefStatusFieldUpdateOperationsInput | $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     draftEdits?: BlogDraftEditUncheckedUpdateManyWithoutBriefNestedInput
@@ -19332,6 +19469,9 @@ export namespace Prisma {
     clientHints?: string | null
     category?: string | null
     status?: $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: Date | string | null
+    coverImage?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -19365,6 +19505,9 @@ export namespace Prisma {
     clientHints?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumBlogBriefStatusFieldUpdateOperationsInput | $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19398,6 +19541,9 @@ export namespace Prisma {
     clientHints?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumBlogBriefStatusFieldUpdateOperationsInput | $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19405,6 +19551,7 @@ export namespace Prisma {
   export type BlogDraftEditCreateInput = {
     id?: string
     draftIndex: number
+    locale?: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19415,6 +19562,7 @@ export namespace Prisma {
     id?: string
     briefId: string
     draftIndex: number
+    locale?: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19423,6 +19571,7 @@ export namespace Prisma {
   export type BlogDraftEditUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     draftIndex?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19433,6 +19582,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     briefId?: StringFieldUpdateOperationsInput | string
     draftIndex?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19442,6 +19592,7 @@ export namespace Prisma {
     id?: string
     briefId: string
     draftIndex: number
+    locale?: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19450,6 +19601,7 @@ export namespace Prisma {
   export type BlogDraftEditUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     draftIndex?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19459,6 +19611,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     briefId?: StringFieldUpdateOperationsInput | string
     draftIndex?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19482,6 +19635,8 @@ export namespace Prisma {
     sourceRequestId?: string | null
     translationGroupId?: string | null
     publishedAt: Date | string
+    scheduledPublishAt?: Date | string | null
+    visibility?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -19504,6 +19659,8 @@ export namespace Prisma {
     sourceRequestId?: string | null
     translationGroupId?: string | null
     publishedAt: Date | string
+    scheduledPublishAt?: Date | string | null
+    visibility?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -19526,6 +19683,8 @@ export namespace Prisma {
     sourceRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     translationGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    visibility?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19548,6 +19707,8 @@ export namespace Prisma {
     sourceRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     translationGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    visibility?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19570,6 +19731,8 @@ export namespace Prisma {
     sourceRequestId?: string | null
     translationGroupId?: string | null
     publishedAt: Date | string
+    scheduledPublishAt?: Date | string | null
+    visibility?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -19592,6 +19755,8 @@ export namespace Prisma {
     sourceRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     translationGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    visibility?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19614,6 +19779,8 @@ export namespace Prisma {
     sourceRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     translationGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    visibility?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19634,6 +19801,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -19662,6 +19830,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -19688,6 +19857,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -19716,6 +19886,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -19743,6 +19914,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -19767,6 +19939,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -19792,6 +19965,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20441,6 +20615,29 @@ export namespace Prisma {
     notIn?: $Enums.BlogBriefStatus[] | ListEnumBlogBriefStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumBlogBriefStatusFilter<$PrismaModel> | $Enums.BlogBriefStatus
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type BlogDraftEditListRelationFilter = {
     every?: BlogDraftEditWhereInput
@@ -20481,6 +20678,9 @@ export namespace Prisma {
     clientHints?: SortOrder
     category?: SortOrder
     status?: SortOrder
+    englishDrafts?: SortOrder
+    scheduledPublishAt?: SortOrder
+    coverImage?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -20515,6 +20715,8 @@ export namespace Prisma {
     clientHints?: SortOrder
     category?: SortOrder
     status?: SortOrder
+    scheduledPublishAt?: SortOrder
+    coverImage?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -20545,6 +20747,8 @@ export namespace Prisma {
     clientHints?: SortOrder
     category?: SortOrder
     status?: SortOrder
+    scheduledPublishAt?: SortOrder
+    coverImage?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -20578,143 +20782,6 @@ export namespace Prisma {
     _min?: NestedEnumBlogBriefStatusFilter<$PrismaModel>
     _max?: NestedEnumBlogBriefStatusFilter<$PrismaModel>
   }
-
-  export type BlogBriefScalarRelationFilter = {
-    is?: BlogBriefWhereInput
-    isNot?: BlogBriefWhereInput
-  }
-
-  export type BlogDraftEditBriefIdDraftIndexCompoundUniqueInput = {
-    briefId: string
-    draftIndex: number
-  }
-
-  export type BlogDraftEditCountOrderByAggregateInput = {
-    id?: SortOrder
-    briefId?: SortOrder
-    draftIndex?: SortOrder
-    content?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type BlogDraftEditAvgOrderByAggregateInput = {
-    draftIndex?: SortOrder
-  }
-
-  export type BlogDraftEditMaxOrderByAggregateInput = {
-    id?: SortOrder
-    briefId?: SortOrder
-    draftIndex?: SortOrder
-    content?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type BlogDraftEditMinOrderByAggregateInput = {
-    id?: SortOrder
-    briefId?: SortOrder
-    draftIndex?: SortOrder
-    content?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type BlogDraftEditSumOrderByAggregateInput = {
-    draftIndex?: SortOrder
-  }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type BlogPostLocaleSlugCompoundUniqueInput = {
-    locale: string
-    slug: string
-  }
-
-  export type BlogPostCountOrderByAggregateInput = {
-    id?: SortOrder
-    slug?: SortOrder
-    locale?: SortOrder
-    title?: SortOrder
-    excerpt?: SortOrder
-    author?: SortOrder
-    category?: SortOrder
-    featured?: SortOrder
-    seoTitle?: SortOrder
-    seoDescription?: SortOrder
-    coverImage?: SortOrder
-    frontmatterJson?: SortOrder
-    mdxContent?: SortOrder
-    sourceBriefId?: SortOrder
-    sourceRequestId?: SortOrder
-    translationGroupId?: SortOrder
-    publishedAt?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type BlogPostMaxOrderByAggregateInput = {
-    id?: SortOrder
-    slug?: SortOrder
-    locale?: SortOrder
-    title?: SortOrder
-    excerpt?: SortOrder
-    author?: SortOrder
-    category?: SortOrder
-    featured?: SortOrder
-    seoTitle?: SortOrder
-    seoDescription?: SortOrder
-    coverImage?: SortOrder
-    mdxContent?: SortOrder
-    sourceBriefId?: SortOrder
-    sourceRequestId?: SortOrder
-    translationGroupId?: SortOrder
-    publishedAt?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type BlogPostMinOrderByAggregateInput = {
-    id?: SortOrder
-    slug?: SortOrder
-    locale?: SortOrder
-    title?: SortOrder
-    excerpt?: SortOrder
-    author?: SortOrder
-    category?: SortOrder
-    featured?: SortOrder
-    seoTitle?: SortOrder
-    seoDescription?: SortOrder
-    coverImage?: SortOrder
-    mdxContent?: SortOrder
-    sourceBriefId?: SortOrder
-    sourceRequestId?: SortOrder
-    translationGroupId?: SortOrder
-    publishedAt?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
@@ -20740,6 +20807,130 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedJsonNullableFilter<$PrismaModel>
     _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type BlogBriefScalarRelationFilter = {
+    is?: BlogBriefWhereInput
+    isNot?: BlogBriefWhereInput
+  }
+
+  export type BlogDraftEditBriefIdDraftIndexLocaleCompoundUniqueInput = {
+    briefId: string
+    draftIndex: number
+    locale: string
+  }
+
+  export type BlogDraftEditCountOrderByAggregateInput = {
+    id?: SortOrder
+    briefId?: SortOrder
+    draftIndex?: SortOrder
+    locale?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BlogDraftEditAvgOrderByAggregateInput = {
+    draftIndex?: SortOrder
+  }
+
+  export type BlogDraftEditMaxOrderByAggregateInput = {
+    id?: SortOrder
+    briefId?: SortOrder
+    draftIndex?: SortOrder
+    locale?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BlogDraftEditMinOrderByAggregateInput = {
+    id?: SortOrder
+    briefId?: SortOrder
+    draftIndex?: SortOrder
+    locale?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BlogDraftEditSumOrderByAggregateInput = {
+    draftIndex?: SortOrder
+  }
+
+  export type BlogPostLocaleSlugCompoundUniqueInput = {
+    locale: string
+    slug: string
+  }
+
+  export type BlogPostCountOrderByAggregateInput = {
+    id?: SortOrder
+    slug?: SortOrder
+    locale?: SortOrder
+    title?: SortOrder
+    excerpt?: SortOrder
+    author?: SortOrder
+    category?: SortOrder
+    featured?: SortOrder
+    seoTitle?: SortOrder
+    seoDescription?: SortOrder
+    coverImage?: SortOrder
+    frontmatterJson?: SortOrder
+    mdxContent?: SortOrder
+    sourceBriefId?: SortOrder
+    sourceRequestId?: SortOrder
+    translationGroupId?: SortOrder
+    publishedAt?: SortOrder
+    scheduledPublishAt?: SortOrder
+    visibility?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BlogPostMaxOrderByAggregateInput = {
+    id?: SortOrder
+    slug?: SortOrder
+    locale?: SortOrder
+    title?: SortOrder
+    excerpt?: SortOrder
+    author?: SortOrder
+    category?: SortOrder
+    featured?: SortOrder
+    seoTitle?: SortOrder
+    seoDescription?: SortOrder
+    coverImage?: SortOrder
+    mdxContent?: SortOrder
+    sourceBriefId?: SortOrder
+    sourceRequestId?: SortOrder
+    translationGroupId?: SortOrder
+    publishedAt?: SortOrder
+    scheduledPublishAt?: SortOrder
+    visibility?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BlogPostMinOrderByAggregateInput = {
+    id?: SortOrder
+    slug?: SortOrder
+    locale?: SortOrder
+    title?: SortOrder
+    excerpt?: SortOrder
+    author?: SortOrder
+    category?: SortOrder
+    featured?: SortOrder
+    seoTitle?: SortOrder
+    seoDescription?: SortOrder
+    coverImage?: SortOrder
+    mdxContent?: SortOrder
+    sourceBriefId?: SortOrder
+    sourceRequestId?: SortOrder
+    translationGroupId?: SortOrder
+    publishedAt?: SortOrder
+    scheduledPublishAt?: SortOrder
+    visibility?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type BoolNullableFilter<$PrismaModel = never> = {
@@ -20789,6 +20980,7 @@ export namespace Prisma {
     finalBlog?: SortOrder
     finalPolishApplied?: SortOrder
     finalPolishWarning?: SortOrder
+    englishDrafts?: SortOrder
     queuedAt?: SortOrder
     startedAt?: SortOrder
     heartbeatAt?: SortOrder
@@ -21960,6 +22152,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -21986,6 +22179,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -22107,6 +22301,7 @@ export namespace Prisma {
     finalBlog?: StringNullableFilter<"blogGenerationRun"> | string | null
     finalPolishApplied?: BoolNullableFilter<"blogGenerationRun"> | boolean | null
     finalPolishWarning?: StringNullableFilter<"blogGenerationRun"> | string | null
+    englishDrafts?: JsonNullableFilter<"blogGenerationRun">
     queuedAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
     startedAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
     heartbeatAt?: DateTimeNullableFilter<"blogGenerationRun"> | Date | string | null
@@ -22350,6 +22545,7 @@ export namespace Prisma {
   export type BlogDraftEditCreateWithoutBriefInput = {
     id?: string
     draftIndex: number
+    locale?: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22358,6 +22554,7 @@ export namespace Prisma {
   export type BlogDraftEditUncheckedCreateWithoutBriefInput = {
     id?: string
     draftIndex: number
+    locale?: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22396,6 +22593,7 @@ export namespace Prisma {
     id?: StringFilter<"BlogDraftEdit"> | string
     briefId?: StringFilter<"BlogDraftEdit"> | string
     draftIndex?: IntFilter<"BlogDraftEdit"> | number
+    locale?: StringFilter<"BlogDraftEdit"> | string
     content?: StringFilter<"BlogDraftEdit"> | string
     createdAt?: DateTimeFilter<"BlogDraftEdit"> | Date | string
     updatedAt?: DateTimeFilter<"BlogDraftEdit"> | Date | string
@@ -22430,6 +22628,9 @@ export namespace Prisma {
     clientHints?: string | null
     category?: string | null
     status?: $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: Date | string | null
+    coverImage?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22463,6 +22664,9 @@ export namespace Prisma {
     clientHints?: string | null
     category?: string | null
     status?: $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: Date | string | null
+    coverImage?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22512,6 +22716,9 @@ export namespace Prisma {
     clientHints?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumBlogBriefStatusFieldUpdateOperationsInput | $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22545,6 +22752,9 @@ export namespace Prisma {
     clientHints?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumBlogBriefStatusFieldUpdateOperationsInput | $Enums.BlogBriefStatus
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
+    scheduledPublishAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22770,6 +22980,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -22797,6 +23008,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -22867,6 +23079,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -22894,6 +23107,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -22954,6 +23168,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -22981,6 +23196,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -23055,6 +23271,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23082,6 +23299,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23171,6 +23389,7 @@ export namespace Prisma {
     finalBlog?: string | null
     finalPolishApplied?: boolean | null
     finalPolishWarning?: string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: Date | string | null
     startedAt?: Date | string | null
     heartbeatAt?: Date | string | null
@@ -23270,6 +23489,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23296,6 +23516,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23322,6 +23543,7 @@ export namespace Prisma {
     finalBlog?: NullableStringFieldUpdateOperationsInput | string | null
     finalPolishApplied?: NullableBoolFieldUpdateOperationsInput | boolean | null
     finalPolishWarning?: NullableStringFieldUpdateOperationsInput | string | null
+    englishDrafts?: NullableJsonNullValueInput | InputJsonValue
     queuedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     heartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23357,6 +23579,7 @@ export namespace Prisma {
   export type BlogDraftEditCreateManyBriefInput = {
     id?: string
     draftIndex: number
+    locale?: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23365,6 +23588,7 @@ export namespace Prisma {
   export type BlogDraftEditUpdateWithoutBriefInput = {
     id?: StringFieldUpdateOperationsInput | string
     draftIndex?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23373,6 +23597,7 @@ export namespace Prisma {
   export type BlogDraftEditUncheckedUpdateWithoutBriefInput = {
     id?: StringFieldUpdateOperationsInput | string
     draftIndex?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23381,6 +23606,7 @@ export namespace Prisma {
   export type BlogDraftEditUncheckedUpdateManyWithoutBriefInput = {
     id?: StringFieldUpdateOperationsInput | string
     draftIndex?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

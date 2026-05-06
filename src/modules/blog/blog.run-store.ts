@@ -34,6 +34,7 @@ interface BlogRunRecord {
     cache_hits?: number;
     cache_misses?: number;
     iteration_count?: number;
+    english_drafts?: string[];
   };
 }
 
@@ -94,6 +95,7 @@ export function completeRunRecord(
     cache_hits?: number;
     cache_misses?: number;
     iteration_count?: number;
+    english_drafts?: string[];
   }
 ): void {
   sweepExpiredRuns();
@@ -129,6 +131,7 @@ export function completeRunRecord(
       cache_hits: data.cache_hits,
       cache_misses: data.cache_misses,
       iteration_count: data.iteration_count,
+      english_drafts: data.english_drafts,
     },
   });
 }

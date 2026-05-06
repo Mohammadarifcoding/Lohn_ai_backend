@@ -149,6 +149,9 @@ model BlogBrief {
   clientHints             String?
   category                String?
   status                  BlogBriefStatus @default(new)
+  englishDrafts           Json?
+  scheduledPublishAt      DateTime?
+  coverImage              String?
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
   draftEdits              BlogDraftEdit[]
@@ -162,25 +165,26 @@ model BlogDraftEdit {
   id         String    @id @default(cuid())
   briefId    String
   draftIndex Int
+  locale     String    @default("de")
   content    String
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   brief      BlogBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
 
-  @@unique([briefId, draftIndex])
+  @@unique([briefId, draftIndex, locale])
   @@index([briefId])
   @@map("blog_draft_edit")
 }
 
 model BlogPost {
-  id                 String   @id @default(cuid())
+  id                 String    @id @default(cuid())
   slug               String
   locale             String
   title              String
   excerpt            String
   author             String
   category           String
-  featured           Boolean  @default(false)
+  featured           Boolean   @default(false)
   seoTitle           String?
   seoDescription     String?
   coverImage         String?
@@ -190,8 +194,10 @@ model BlogPost {
   sourceRequestId    String?
   translationGroupId String?
   publishedAt        DateTime
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  scheduledPublishAt DateTime?
+  visibility         String    @default("visible")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@unique([locale, slug])
   @@index([publishedAt])
@@ -216,6 +222,7 @@ model blogGenerationRun {
   finalBlog          String?
   finalPolishApplied Boolean?
   finalPolishWarning String?
+  englishDrafts      Json?
   queuedAt           DateTime?
   startedAt          DateTime?
   heartbeatAt        DateTime?

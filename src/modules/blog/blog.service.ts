@@ -3,6 +3,7 @@ import { runFinalLanguagePolish } from "../../agents/final_language_polish_agent
 import { logger } from "../../utils/logger.js";
 import { runGenerateBlogGraph } from "../../workflows/blog/generate.graph.js";
 import { normalizeFrontmatterFields } from "./frontmatter-style.js";
+import { translateBlogMdxToEnglish } from "./blog.translate.js";
 import {
   completeRunRecord,
   failRunRecord,
@@ -323,6 +324,24 @@ export async function runGenerateBlogInBackground(
     heartbeatTimer = undefined;
     const durationMs = Date.now() - startedAt;
 
+    // Translate all 3 German drafts to English
+    let englishDrafts: string[] = [];
+    try {
+      englishDrafts = await Promise.all(
+        (state.drafts ?? []).map((draft) => translateBlogMdxToEnglish(draft.content))
+      );
+      logger.info("English draft translation completed", {
+        requestId,
+        draftCount: englishDrafts.length,
+      });
+    } catch (translationError) {
+      logger.warn("English draft translation failed", {
+        requestId,
+        error: getErrorMessage(translationError),
+      });
+      // Continue without English drafts - German drafts are still usable
+    }
+
     const output = {
       requestId,
       userId,
@@ -347,6 +366,7 @@ export async function runGenerateBlogInBackground(
       cache_hits: state.cache_hits,
       cache_misses: state.cache_misses,
       iteration_count: state.iteration_count,
+      english_drafts: englishDrafts,
     };
 
     // Current requirement: print the completed output in console.
@@ -374,6 +394,7 @@ export async function runGenerateBlogInBackground(
       cache_hits: state.cache_hits,
       cache_misses: state.cache_misses,
       iteration_count: state.iteration_count,
+      english_drafts: englishDrafts,
     });
 
     const selectedDraftIndex = state.selected_drafts?.[0]
@@ -401,6 +422,7 @@ export async function runGenerateBlogInBackground(
             : undefined,
         finalBlog: state.final_blog,
         heartbeatAt: new Date(),
+        englishDrafts,
       });
     } catch (persistError) {
       const persistMessage = getErrorMessage(persistError);
