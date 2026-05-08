@@ -27,6 +27,32 @@ const gpt4oMini = new ChatOpenAI({
   },
 });
 
+const gpt55 = new ChatOpenAI({
+  model: "openai/gpt-5.5",
+  apiKey: config.OPENROUTER_API_KEY,
+  temperature: 0.3,
+  maxRetries: 2,
+  timeout: 60000,
+  maxTokens: 8000,
+  topP: 0.9,
+  frequencyPenalty: 0.2,
+  configuration: {
+    baseURL: config.AI_GATEWAY_URL,
+  },
+});
+
+const gpt54Mini = new ChatOpenAI({
+  model: "openai/gpt-5.4-mini",
+  apiKey: config.OPENROUTER_API_KEY,
+  temperature: 0.1,
+  maxRetries: 2,
+  timeout: 30000,
+  maxTokens: 4000,
+  configuration: {
+    baseURL: config.AI_GATEWAY_URL,
+  },
+});
+
 const claude = new ChatOpenAI({
   model: "anthropic/claude-sonnet-4.6",
   apiKey: config.OPENROUTER_API_KEY,
@@ -57,6 +83,8 @@ const qwen = new ChatOpenAI({
 export const models = {
   gpt4o,
   gpt4oMini,
+  gpt55,
+  gpt54Mini,
   claude,
   qwen,
 };

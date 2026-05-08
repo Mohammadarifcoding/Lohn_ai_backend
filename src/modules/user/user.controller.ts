@@ -1,7 +1,7 @@
 import type { Response, NextFunction } from "express";
 import { userService } from "./user.service.js";
 import { sendSuccess } from "../../utils/apiResponse.js";
-import { ForbiddenError, BadRequestError } from "../../utils/appError.js";
+import { BadRequestError } from "../../utils/appError.js";
 import type { AuthenticatedRequest } from "../../types/index.js";
 
 /**
@@ -42,22 +42,14 @@ export async function getUserById(
 
 /**
  * PUT /api/users/:id
- * Update a user profile (owner or admin).
+ * Update a user profile (admin only).
  */
 export async function updateUser(
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): Promise<void> {
   const id = getParam(req.params.id);
-  const currentUser = req.user!;
-
-  // Only allow the user themselves or an admin to update
-  if (currentUser.id !== id && currentUser.role !== "admin") {
-    next(new ForbiddenError("You can only update your own profile"));
-    return;
-  }
-
   const user = await userService.updateUser(id, req.body);
   sendSuccess(res, user, "User updated successfully");
 }

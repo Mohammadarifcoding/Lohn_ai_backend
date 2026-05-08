@@ -251,8 +251,199 @@ function getMinimumWordCount(requirement: Requirement): number {
   return 650;
 }
 
-function getStructureVariant(index: number): StructureVariantConfig {
-  return STRUCTURE_VARIANTS[index % STRUCTURE_VARIANTS.length];
+function buildStructureSignalText(idea: BlogIdea, requirement: Requirement): string {
+  const outlineText = idea.outline
+    .flatMap((section) => [section.section_title, ...section.points])
+    .join(" ");
+
+  return normalizeWhitespace(
+    [
+      idea.title,
+      idea.hook,
+      idea.unique_angle,
+      idea.storytelling_strategy,
+      idea.examples.join(" "),
+      outlineText,
+      requirement.refined_intent,
+      requirement.content_format,
+      requirement.core_sections.join(" "),
+      requirement.key_angles.join(" "),
+    ].join(" "),
+  ).toLowerCase();
+}
+
+function countPatternMatches(text: string, patterns: RegExp[]): number {
+  return patterns.reduce(
+    (total, pattern) => total + (pattern.test(text) ? 1 : 0),
+    0,
+  );
+}
+
+function scoreStructureVariant(
+  variant: StructureVariant,
+  idea: BlogIdea,
+  requirement: Requirement,
+): number {
+  const signalText = buildStructureSignalText(idea, requirement);
+  const questionHeadings = idea.outline.filter((section) =>
+    section.section_title.trim().endsWith("?"),
+  ).length;
+  const titleLower = idea.title.toLowerCase();
+  const uniqueAngleLower = idea.unique_angle.toLowerCase();
+  const storytellingLower = idea.storytelling_strategy.toLowerCase();
+  const contentFormat = requirement.content_format;
+
+  switch (variant) {
+    case "faq_explainer":
+      return (
+        questionHeadings * 4 +
+        countPatternMatches(signalText, [
+          /\bfaq\b/,
+          /\bfragen\b/,
+          /\bantworten\b/,
+          /\bwas\b/,
+          /\bwie\b/,
+          /\bwarum\b/,
+          /\bwann\b/,
+        ])
+      );
+    case "comparison":
+      return (
+        countPatternMatches(signalText, [
+          /\bvergleich\b/,
+          /\bvs\.?\b/,
+          /\boder\b/,
+          /\balternative\b/,
+          /\boption(en)?\b/,
+          /\bunterschied(e)?\b/,
+        ]) * 3 +
+        (/(vs\.?|vergleich|alternativen?)/.test(titleLower) ? 4 : 0)
+      );
+    case "risk_review":
+      return countPatternMatches(signalText, [
+        /\brisik/,
+        /\bfehler\b/,
+        /\bwarn/,
+        /\bprüfung\b/,
+        /\bkontroll/,
+        /\bcompliance\b/,
+        /\bvermeiden\b/,
+      ]) * 3;
+    case "workflow_article":
+      return (
+        countPatternMatches(signalText, [
+          /\bprozess\b/,
+          /\bworkflow\b/,
+          /\bablauf\b/,
+          /\bfreigab/,
+          /\bübergab/,
+          /\brollout\b/,
+          /\bautomati/,
+        ]) * 3 +
+        (/(workflow|prozess|ablauf)/.test(uniqueAngleLower) ? 3 : 0)
+      );
+    case "case_style":
+      return (
+        countPatternMatches(signalText, [
+          /\bbeispiel\b/,
+          /\bszenario\b/,
+          /\bteam\b/,
+          /\balltag\b/,
+          /\berfahrung\b/,
+          /\blektion(en)?\b/,
+          /\bfall\b/,
+        ]) * 3 +
+        (/(szenario|geschichte|fall)/.test(storytellingLower) ? 4 : 0)
+      );
+    case "checklist_article":
+      return (
+        countPatternMatches(signalText, [
+          /\bchecklist\b/,
+          /\bcheckliste\b/,
+          /\bprüfliste\b/,
+          /\bto-do\b/,
+          /\baudit\b/,
+          /\bvorbereitung\b/,
+          /\bready\b/,
+        ]) * 3 +
+        (contentFormat === "listicle" ? 3 : 0)
+      );
+    case "myth_reality":
+      return countPatternMatches(signalText, [
+        /\bmyth/,
+        /\bmythen\b/,
+        /\bannahme\b/,
+        /\birrtum\b/,
+        /\bmissverständnis/,
+        /\bwahrheit\b/,
+        /\brealität\b/,
+      ]) * 4;
+    case "decision_guide":
+      return (
+        countPatternMatches(signalText, [
+          /\bentscheidung\b/,
+          /\bauswahl\b/,
+          /\bkriteri/,
+          /\bwann lohnt/,
+          /\bwelche lösung\b/,
+          /\bpass(t|en)\b/,
+          /\bentscheiden\b/,
+        ]) * 3 +
+        (/(entscheiden|auswählen|kriterien)/.test(uniqueAngleLower) ? 4 : 0)
+      );
+    case "problem_solution":
+      return (
+        countPatternMatches(signalText, [
+          /\bproblem\b/,
+          /\bherausforderung\b/,
+          /\bengpass\b/,
+          /\blösung\b/,
+          /\bbeheben\b/,
+          /\bursache\b/,
+        ]) * 3 +
+        (/(problem|herausforderung|schmerzpunkt)/.test(uniqueAngleLower) ? 4 : 0)
+      );
+    case "practical_guide":
+      return (
+        countPatternMatches(signalText, [
+          /\banleitung\b/,
+          /\bschritt\b/,
+          /\bumsetzen\b/,
+          /\beinführen\b/,
+          /\bsetup\b/,
+          /\bso geht/,
+          /\bleitfaden\b/,
+        ]) * 3 +
+        (contentFormat === "guide" ? 4 : 0)
+      );
+  }
+
+  return 0;
+}
+
+function selectStructureVariant(
+  idea: BlogIdea,
+  requirement: Requirement,
+  usedVariants: Set<StructureVariant>,
+): StructureVariantConfig {
+  const ranked = STRUCTURE_VARIANTS
+    .map((variant, index) => ({
+      variant,
+      score: scoreStructureVariant(variant.name, idea, requirement),
+      usedPenalty: usedVariants.has(variant.name) ? 1 : 0,
+      index,
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      if (a.usedPenalty !== b.usedPenalty) {
+        return a.usedPenalty - b.usedPenalty;
+      }
+      return a.index - b.index;
+    });
+
+  return ranked[0]?.variant ?? STRUCTURE_VARIANTS[0];
 }
 
 function getHeadings(content: string): string[] {
@@ -561,6 +752,7 @@ async function generateSingleDraft(
   idea: BlogIdea,
   ideaIndex: number,
   state: ReturnType<typeof BlogAgentStateSchema.parse>,
+  structureVariant: StructureVariantConfig,
   recentBlogStructures: RecentBlogStructure[],
 ): Promise<Draft> {
   if (!state.requirement) {
@@ -570,7 +762,6 @@ async function generateSingleDraft(
   let shouldUseCompactRetry = false;
   let lastError: unknown;
   let lastHardIssues: string[] = [];
-  const structureVariant = getStructureVariant(ideaIndex);
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const compact = shouldUseCompactRetry && attempt > 0;
@@ -682,15 +873,23 @@ const writingAgent: GraphNode<typeof BlogAgentStateSchema> = async (
 
   const selectedIdeas = ideas.slice(0, DRAFT_COUNT);
   const drafts: Draft[] = [];
+  const usedVariants = new Set<StructureVariant>();
   const recentBlogStructures = await getRecentBlogStructures();
 
   for (let i = 0; i < selectedIdeas.length; i += 1) {
+    const structureVariant = selectStructureVariant(
+      selectedIdeas[i],
+      state.requirement,
+      usedVariants,
+    );
     const draft = await generateSingleDraft(
       selectedIdeas[i],
       i,
       state,
+      structureVariant,
       recentBlogStructures,
     );
+    usedVariants.add(structureVariant.name);
     drafts.push(draft);
   }
 

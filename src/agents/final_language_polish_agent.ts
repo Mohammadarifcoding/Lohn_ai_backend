@@ -127,7 +127,7 @@ export async function runFinalLanguagePolish(
   const strictStructure = options?.strictStructure ?? true;
 
   try {
-    const response = await models.gpt4o.invoke([
+    const response = await models.gpt54Mini.invoke([
       new SystemMessage(prompts.finalLanguagePolishPrompt),
       new HumanMessage(original),
     ]);

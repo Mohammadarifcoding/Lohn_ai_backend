@@ -50,6 +50,25 @@ function parseEnvFile(filePath: string): ParsedEnvFile {
   };
 }
 
+function tryParseEnvFile(filePath: string): ParsedEnvFile | undefined {
+  if (!existsSync(filePath)) {
+    return undefined;
+  }
+
+  return parseEnvFile(filePath);
+}
+
+function resolveEnvFile(root: string, candidates: string[]): ParsedEnvFile | undefined {
+  for (const candidate of candidates) {
+    const parsed = tryParseEnvFile(path.resolve(root, candidate));
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  return undefined;
+}
+
 function buildUploadVariables(vars: Record<string, string>): Array<{ name: string; value: string }> {
   const uploadVars: Array<{ name: string; value: string }> = [];
 
@@ -135,30 +154,42 @@ async function main(): Promise<void> {
     return;
   }
 
-  const devEnv = parseEnvFile(path.resolve(root, ".env.development"));
-  const prodEnv = parseEnvFile(path.resolve(root, ".env.production"));
+  const devEnv = resolveEnvFile(root, [".env.local"]);
+  const prodEnv = resolveEnvFile(root, [".env.production.local"]);
+
+  if (mode === "dev" && !devEnv) {
+    throw new Error(
+      "Missing development env file. Expected: .env.local",
+    );
+  }
+
+  if (mode === "prod" && !prodEnv) {
+    throw new Error(
+      "Missing production env file. Expected: .env.production.local",
+    );
+  }
 
   const projectRef =
     process.env.TRIGGER_PROJECT_REF ||
-    devEnv.triggerProjectRef ||
-    prodEnv.triggerProjectRef;
+    devEnv?.triggerProjectRef ||
+    prodEnv?.triggerProjectRef;
 
   if (!projectRef) {
     throw new Error(
-      "Missing TRIGGER_PROJECT_REF. Add it to .env.development/.env.production or shell env.",
+      "Missing TRIGGER_PROJECT_REF. Add it to .env.local, .env.production.local, or shell env.",
     );
   }
 
   if (mode === "dev") {
-    const devToken = process.env.TRIGGER_DEV_KEY || devEnv.triggerSecretKey;
+    const devToken = process.env.TRIGGER_DEV_KEY || devEnv?.triggerSecretKey;
     if (!devToken) {
       throw new Error(
-        "Missing dev Trigger key. Set TRIGGER_DEV_KEY or TRIGGER_SECRET_KEY in .env.development.",
+        "Missing dev Trigger key. Set TRIGGER_DEV_KEY or TRIGGER_SECRET_KEY in .env.local.",
       );
     }
 
     await syncEnvironment({
-      parsedEnv: devEnv,
+      parsedEnv: devEnv!,
       env: "dev",
       projectRef,
       accessToken: devToken,
@@ -166,15 +197,15 @@ async function main(): Promise<void> {
   }
 
   if (mode === "prod") {
-    const prodToken = process.env.TRIGGER_PROD_KEY || prodEnv.triggerSecretKey;
+    const prodToken = process.env.TRIGGER_PROD_KEY || prodEnv?.triggerSecretKey;
     if (!prodToken) {
       throw new Error(
-        "Missing prod Trigger key. Set TRIGGER_PROD_KEY or TRIGGER_SECRET_KEY in .env.production.",
+        "Missing prod Trigger key. Set TRIGGER_PROD_KEY or TRIGGER_SECRET_KEY in .env.production.local.",
       );
     }
 
     await syncEnvironment({
-      parsedEnv: prodEnv,
+      parsedEnv: prodEnv!,
       env: "prod",
       projectRef,
       accessToken: prodToken,

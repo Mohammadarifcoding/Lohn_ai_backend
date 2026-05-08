@@ -122,7 +122,7 @@ function validateTranslatedMdx(original: string, translated: string): string[] {
 
 export async function translateBlogMdxToEnglish(content: string): Promise<string> {
   const source = content.trim();
-  const response = await models.claude.invoke([
+  const response = await models.gpt55.invoke([
     new SystemMessage(prompts.blogTranslationPrompt),
     new HumanMessage(source),
   ]);

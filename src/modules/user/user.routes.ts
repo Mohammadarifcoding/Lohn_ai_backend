@@ -94,7 +94,7 @@ router.get(
  * @swagger
  * /api/users/{id}:
  *   put:
- *     summary: Update user profile (owner or admin)
+ *     summary: Update user profile (admin only)
  *     tags: [Users]
  *     security:
  *       - cookieAuth: []
@@ -127,6 +127,7 @@ router.get(
 router.put(
   "/:id",
   authenticate,
+  requireRole("admin"),
   validate({ params: getUserParamsSchema, body: updateUserSchema }),
   asyncHandler(updateUser)
 );

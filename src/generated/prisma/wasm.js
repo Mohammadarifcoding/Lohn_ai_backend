@@ -375,8 +375,7 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../../lohnai-website/.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../../../lohnai-website/prisma",
   "clientVersion": "6.19.3",
