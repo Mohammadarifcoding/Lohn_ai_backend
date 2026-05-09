@@ -1,5 +1,8 @@
 import { config } from "./config/index.js";
+import "./config/sentry.js";
+
 import { logger } from "./utils/logger.js";
+import * as Sentry from "@sentry/node";
 import app from "./app.js";
 import { bootstrapAdminAccount } from "./bootstrap/admin.js";
 
@@ -41,10 +44,12 @@ process.on("SIGINT", () => {
 });
 
 process.on("unhandledRejection", (reason) => {
+  Sentry.captureException(reason instanceof Error ? reason : new Error(String(reason)));
   logger.error("Unhandled Rejection:", reason);
 });
 
 process.on("uncaughtException", (error) => {
+  Sentry.captureException(error);
   logger.error("Uncaught Exception:", error);
   process.exit(1);
 });

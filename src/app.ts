@@ -4,6 +4,7 @@ import * as helmetModule from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
+import * as Sentry from "@sentry/node";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./config/auth.js";
 import { swaggerSpec } from "./config/swagger.js";
@@ -74,7 +75,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin/blog", blogRoutes);
 app.use("/api/assistant", assistantRoutes);
 
-// ─── Global Error Handler ────────────────────────────────────────────────────
+// ─── Global Error Handlers ───────────────────────────────────────────────────
+Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
 export default app;

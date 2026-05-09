@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import * as Sentry from "@sentry/node";
 import { AppError } from "../utils/appError.js";
 import { logger } from "../utils/logger.js";
 import { sendError } from "../utils/apiResponse.js";
@@ -35,6 +36,7 @@ export function errorHandler(
   }
 
   // Unexpected errors
+  Sentry.captureException(err);
   logger.error("Unhandled error:", {
     message: err.message,
     stack: err.stack,

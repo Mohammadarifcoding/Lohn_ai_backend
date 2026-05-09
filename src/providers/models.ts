@@ -58,8 +58,8 @@ const claude = new ChatOpenAI({
   apiKey: config.OPENROUTER_API_KEY,
   temperature: 0.7,
   maxRetries: 2,
-  timeout: 60000,
-  maxTokens: 8000,
+  timeout: 180000,
+  maxTokens: 6000,
   topP: 0.95,
   frequencyPenalty: 0.3,
   configuration: {

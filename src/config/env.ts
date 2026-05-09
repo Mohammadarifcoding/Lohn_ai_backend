@@ -81,8 +81,27 @@ function getExpectedEnvPath(environment: z.infer<typeof EnvironmentNameSchema>):
   );
 }
 
+function hasInjectedRuntimeEnv(): boolean {
+  const signals = [
+    process.env.DATABASE_URL,
+    process.env.BETTER_AUTH_SECRET,
+    process.env.OPENROUTER_API_KEY,
+    process.env.AI_GATEWAY_URL,
+    process.env.TAVILY_API_KEY,
+  ];
+
+  return signals.some((value) => typeof value === "string" && value.trim().length > 0);
+}
+
 function shouldSkipFileLoading(environment: z.infer<typeof EnvironmentNameSchema>): boolean {
-  return environment === "production" && (process.env.VERCEL === "1" || process.env.VERCEL === "true");
+  return (
+    environment === "production" &&
+    (
+      process.env.VERCEL === "1" ||
+      process.env.VERCEL === "true" ||
+      hasInjectedRuntimeEnv()
+    )
+  );
 }
 
 function loadEnvironmentFile(environment: z.infer<typeof EnvironmentNameSchema>): string | undefined {
@@ -108,7 +127,7 @@ function formatValidationError(
 ): string {
   const expectedSource = envPath
     ? path.basename(envPath)
-    : "runtime environment variables (Vercel production)";
+    : "runtime environment variables";
   const issues = error.issues.map((issue) => {
     const key = issue.path.join(".") || "root";
     return `- ${key}: ${issue.message}`;
@@ -141,7 +160,7 @@ export function validateEnvironment(): {
         "Environment validation failed.",
         `Requested NODE_ENV=${environment}`,
         `Loaded NODE_ENV=${parsed.data.NODE_ENV}`,
-        `Expected env source: ${envPath ? path.basename(envPath) : "runtime environment variables (Vercel production)"}`,
+        `Expected env source: ${envPath ? path.basename(envPath) : "runtime environment variables"}`,
         "The selected env file does not match the active NODE_ENV.",
       ].join("\n"),
     );

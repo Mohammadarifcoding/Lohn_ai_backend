@@ -712,7 +712,11 @@ function isLengthLimitError(message: string): boolean {
   return (
     normalized.includes("length limit was reached") ||
     normalized.includes("maximum context length") ||
-    normalized.includes("token limit")
+    normalized.includes("token limit") ||
+    normalized.includes("request timed out") ||
+    normalized.includes("timed out") ||
+    normalized.includes("timeout") ||
+    normalized.includes("etimedout")
   );
 }
 

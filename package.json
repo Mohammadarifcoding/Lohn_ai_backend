@@ -52,6 +52,7 @@
     "@langchain/pinecone": "^1.0.1",
     "@pinecone-database/pinecone": "^5.1.2",
     "@prisma/client": "^6.19.3",
+    "@sentry/node": "^10.52.0",
     "@tavily/core": "^0.7.2",
     "@trigger.dev/sdk": "4.4.5",
     "better-auth": "^1.6.2",
