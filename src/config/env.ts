@@ -52,8 +52,31 @@ const EnvSchema = z.object({
   TRIGGER_PROJECT_REF: z.string().trim().min(1).optional(),
   TRIGGER_USE_QUEUE: z.preprocess(parseBoolean, z.boolean().default(false)),
   BLOG_RESEARCH_CACHE_ENABLED: z.preprocess(parseBoolean, z.boolean().default(false)),
+  ANALYTICS_SALT: z.string().trim().min(32, "ANALYTICS_SALT must be at least 32 characters"),
+  UPSTASH_REDIS_REST_URL: z.string().trim().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().trim().min(1).optional(),
   RESEND_API_KEY: z.string().trim().min(1, "RESEND_API_KEY is required"),
   SENTRY_DSN: z.string().trim().url().optional(),
+}).superRefine((env, ctx) => {
+  if (env.NODE_ENV !== "production") {
+    return;
+  }
+
+  if (!env.UPSTASH_REDIS_REST_URL) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["UPSTASH_REDIS_REST_URL"],
+      message: "UPSTASH_REDIS_REST_URL is required in production",
+    });
+  }
+
+  if (!env.UPSTASH_REDIS_REST_TOKEN) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["UPSTASH_REDIS_REST_TOKEN"],
+      message: "UPSTASH_REDIS_REST_TOKEN is required in production",
+    });
+  }
 });
 
 export type ValidatedEnv = z.infer<typeof EnvSchema>;

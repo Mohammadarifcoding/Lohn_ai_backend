@@ -4,27 +4,14 @@ import { config } from "../config/index.js";
 import { logger } from "../utils/logger.js";
 
 export async function bootstrapAdminAccount(): Promise<void> {
-  const email = config.ADMIN_EMAIL.trim().toLowerCase();
+  const userCount = await prisma.user.count();
 
-  const existing = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true, role: true },
-  });
-
-  if (existing) {
-    if (existing.role !== "admin") {
-      await prisma.user.update({
-        where: { id: existing.id },
-        data: { role: "admin" },
-      });
-
-      logger.info("Existing user elevated to admin role", { email });
-      return;
-    }
-
-    logger.info("Admin account already exists", { email });
+  if (userCount > 0) {
+    logger.info("Admin bootstrap skipped because users already exist");
     return;
   }
+
+  const email = config.ADMIN_EMAIL.trim().toLowerCase();
 
   await auth.api.signUpEmail({
     body: {

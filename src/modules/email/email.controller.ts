@@ -1,32 +1,64 @@
 import type { Request, Response } from "express";
+import { z } from "zod";
 import { enqueueSendEmailTask } from "../../trigger/enqueue.js";
 import { logger } from "../../utils/logger.js";
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
+const honeypotFields = ["website", "companyWebsite", "url", "homepage"];
+
+const ContactSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  firma: z.string().trim().min(1).max(160),
+  email: z.email().trim().max(254),
+  anliegen: z.string().trim().max(160).optional().default(""),
+  nachricht: z.string().trim().min(1).max(5000),
+});
+
+const TaxAdvisorSchema = z.object({
+  kanzleiname: z.string().trim().min(1).max(180),
+  ansprechpartner: z.string().trim().min(1).max(160),
+  strasse: z.string().trim().max(200).optional(),
+  plz: z.string().trim().max(20).optional(),
+  ort: z.string().trim().max(120).optional(),
+  kammerNr: z.string().trim().min(1).max(80),
+  anzahlMandanten: z.string().trim().max(40).optional(),
+  anzahlMitarbeiter: z.string().trim().max(40).optional(),
+  email: z.email().trim().max(254),
+  telefon: z.string().trim().max(40).optional(),
+});
+
+function isHoneypotFilled(body: Record<string, unknown>): boolean {
+  return honeypotFields.some((field) => {
+    const value = body[field];
+    return typeof value === "string" && value.trim().length > 0;
+  });
+}
+
+function respondValidationError(res: Response): void {
+  res.status(400).json({ ok: false, error: "Invalid form submission" });
 }
 
 export async function submitContact(req: Request, res: Response): Promise<void> {
   const body = req.body as Record<string, unknown>;
 
-  const name = body.name;
-  const firma = body.firma;
-  const email = body.email;
-  const nachricht = body.nachricht;
+  if (isHoneypotFilled(body)) {
+    res.status(200).json({ ok: true });
+    return;
+  }
 
-  if (!isNonEmptyString(name) || !isNonEmptyString(firma) || !isNonEmptyString(email) || !isNonEmptyString(nachricht)) {
-    res.status(400).json({ ok: false, error: "Missing required fields" });
+  const parsed = ContactSchema.safeParse(body);
+  if (!parsed.success) {
+    respondValidationError(res);
     return;
   }
 
   const result = await enqueueSendEmailTask({
     type: "contact",
     data: {
-      name: name.trim(),
-      firma: firma.trim(),
-      email: email.trim(),
-      anliegen: typeof body.anliegen === "string" ? body.anliegen.trim() : "",
-      nachricht: nachricht.trim(),
+      name: parsed.data.name,
+      firma: parsed.data.firma,
+      email: parsed.data.email,
+      anliegen: parsed.data.anliegen,
+      nachricht: parsed.data.nachricht,
     },
   });
 
@@ -38,29 +70,30 @@ export async function submitContact(req: Request, res: Response): Promise<void> 
 export async function submitTaxAdvisor(req: Request, res: Response): Promise<void> {
   const body = req.body as Record<string, unknown>;
 
-  const kanzleiname = body.kanzleiname;
-  const ansprechpartner = body.ansprechpartner;
-  const kammerNr = body.kammerNr;
-  const email = body.email;
+  if (isHoneypotFilled(body)) {
+    res.status(200).json({ ok: true });
+    return;
+  }
 
-  if (!isNonEmptyString(kanzleiname) || !isNonEmptyString(ansprechpartner) || !isNonEmptyString(kammerNr) || !isNonEmptyString(email)) {
-    res.status(400).json({ ok: false, error: "Missing required fields" });
+  const parsed = TaxAdvisorSchema.safeParse(body);
+  if (!parsed.success) {
+    respondValidationError(res);
     return;
   }
 
   const result = await enqueueSendEmailTask({
     type: "tax-advisor",
     data: {
-      kanzleiname: kanzleiname.trim(),
-      ansprechpartner: ansprechpartner.trim(),
-      strasse: typeof body.strasse === "string" ? body.strasse.trim() : undefined,
-      plz: typeof body.plz === "string" ? body.plz.trim() : undefined,
-      ort: typeof body.ort === "string" ? body.ort.trim() : undefined,
-      kammerNr: kammerNr.trim(),
-      anzahlMandanten: typeof body.anzahlMandanten === "string" ? body.anzahlMandanten.trim() : undefined,
-      anzahlMitarbeiter: typeof body.anzahlMitarbeiter === "string" ? body.anzahlMitarbeiter.trim() : undefined,
-      email: email.trim(),
-      telefon: typeof body.telefon === "string" ? body.telefon.trim() : undefined,
+      kanzleiname: parsed.data.kanzleiname,
+      ansprechpartner: parsed.data.ansprechpartner,
+      strasse: parsed.data.strasse,
+      plz: parsed.data.plz,
+      ort: parsed.data.ort,
+      kammerNr: parsed.data.kammerNr,
+      anzahlMandanten: parsed.data.anzahlMandanten,
+      anzahlMitarbeiter: parsed.data.anzahlMitarbeiter,
+      email: parsed.data.email,
+      telefon: parsed.data.telefon,
     },
   });
 

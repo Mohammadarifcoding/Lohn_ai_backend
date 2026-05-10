@@ -8,7 +8,7 @@ import * as Sentry from "@sentry/node";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./config/auth.js";
 import { swaggerSpec } from "./config/swagger.js";
-import { adminApiLimiter, apiLimiter, authLimiter } from "./middleware/rateLimiter.js";
+import { adminApiLimiter, analyticsLimiter, apiLimiter, authLimiter, emailLimiter } from "./middleware/rateLimiter.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { logger } from "./utils/logger.js";
 import { sendSuccess } from "./utils/apiResponse.js";
@@ -66,6 +66,8 @@ app.use(compression());
 app.use("/api/auth", authLimiter);
 app.use("/api/admin", adminApiLimiter);
 app.use("/api/users/me", adminApiLimiter);
+app.use("/api/analytics", analyticsLimiter);
+app.use("/api/email", emailLimiter);
 app.use("/api", apiLimiter);
 
 // ─── Better Auth Handler (MUST be before express.json()) ─────────────────────
@@ -95,7 +97,9 @@ app.get("/api/health", (_req, res) => {
 });
 
 // ─── Swagger Docs ────────────────────────────────────────────────────────────
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+if (process.env.NODE_ENV !== "production") {
+  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
 app.use("/api/users", userRoutes);

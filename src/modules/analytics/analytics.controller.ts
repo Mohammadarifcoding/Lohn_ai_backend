@@ -1,8 +1,17 @@
 import type { Request, Response } from "express";
 import { createHash } from "node:crypto";
+import { z } from "zod";
 import { prisma } from "../../config/database.js";
+import { config } from "../../config/index.js";
 
-const DEFAULT_ANALYTICS_SALT = "lohnai-website-analytics";
+const PageViewSchema = z.object({
+  pathname: z.string().trim().min(1).max(200),
+});
+
+const AvatarUsageSchema = z.object({
+  conversationId: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9._:-]+$/),
+  route: z.literal("gemini-live").optional(),
+});
 
 function pickClientIp(headerValue: string | undefined) {
   if (!headerValue) {
@@ -16,13 +25,12 @@ function getVisitorHashFromRequest(req: Request): string {
   const realIp = req.get("x-real-ip");
   const userAgent = req.get("user-agent") || "unknown-user-agent";
   const acceptLanguage = req.get("accept-language") || "unknown-language";
-  const analyticsSalt = process.env.ANALYTICS_SALT || DEFAULT_ANALYTICS_SALT;
 
   const visitorSeed = [
     pickClientIp(forwardedFor || realIp),
     userAgent,
     acceptLanguage,
-    analyticsSalt,
+    config.ANALYTICS_SALT,
   ].join("|");
 
   return createHash("sha256").update(visitorSeed).digest("hex");
@@ -42,11 +50,9 @@ function isTrackablePathname(pathname: string) {
 
 export async function trackPageView(req: Request, res: Response): Promise<void> {
   try {
-    const body = req.body as { pathname?: unknown };
-    const pathname =
-      typeof body.pathname === "string" ? body.pathname.trim().slice(0, 200) : "";
+    const parsed = PageViewSchema.safeParse(req.body);
 
-    if (!pathname || !isTrackablePathname(pathname)) {
+    if (!parsed.success || !isTrackablePathname(parsed.data.pathname)) {
       res.status(400).json({ ok: false });
       return;
     }
@@ -55,7 +61,7 @@ export async function trackPageView(req: Request, res: Response): Promise<void> 
 
     await prisma.sitePageView.create({
       data: {
-        pathname,
+        pathname: parsed.data.pathname,
         visitorHash,
       },
     });
@@ -67,31 +73,19 @@ export async function trackPageView(req: Request, res: Response): Promise<void> 
   }
 }
 
-function sanitizeConversationId(value: unknown) {
-  if (typeof value !== "string") {
-    return null;
-  }
-  const normalized = value.trim();
-  if (!normalized || normalized.length > 128) {
-    return null;
-  }
-  return normalized;
-}
-
 export type AvatarAnalyticsRoute = "gemini-live";
 
 export async function trackAvatarUsage(req: Request, res: Response): Promise<void> {
   try {
-    const body = req.body as { conversationId?: unknown; route?: unknown };
-    const conversationId = sanitizeConversationId(body.conversationId);
+    const parsed = AvatarUsageSchema.safeParse(req.body);
 
-    if (!conversationId) {
+    if (!parsed.success) {
       res.status(400).json({ ok: false });
       return;
     }
 
-    const route: AvatarAnalyticsRoute =
-      body.route === "gemini-live" ? "gemini-live" : "gemini-live";
+    const conversationId = parsed.data.conversationId;
+    const route: AvatarAnalyticsRoute = parsed.data.route ?? "gemini-live";
 
     await prisma.$transaction([
       prisma.aiConversation.upsert({
