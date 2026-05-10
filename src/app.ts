@@ -1,5 +1,5 @@
 import express, { type Express } from "express";
-import cors from "cors";
+import cors, { type CorsOptions } from "cors";
 import * as helmetModule from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
@@ -14,10 +14,12 @@ import { logger } from "./utils/logger.js";
 import { sendSuccess } from "./utils/apiResponse.js";
 import userRoutes from "./modules/user/user.routes.js";
 import blogRoutes from "./modules/blog/blog.routes.js";
-import assistantRoutes from "./modules/assistant/assistant.routes.js";
+import analyticsRoutes from "./modules/analytics/analytics.routes.js";
+import emailRoutes from "./modules/email/email.routes.js";
+import testingRoutes from "./modules/testing/testing.routes.js";
 
 const helmetMiddleware = ((helmetModule as { default?: unknown }).default ??
-  helmetModule) as unknown as () => express.RequestHandler;
+  helmetModule) as unknown as (options?: Record<string, unknown>) => express.RequestHandler;
 
 const app: Express = express();
 
@@ -26,13 +28,38 @@ if (process.env.VERCEL || process.env.NODE_ENV === "production") {
 }
 
 // ─── Security & Compression ──────────────────────────────────────────────────
-app.use(helmetMiddleware());
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-    credentials: true,
-  })
-);
+app.use(helmetMiddleware({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+
+const allowedOrigins = new Set([
+  ...(process.env.CORS_ORIGIN ?? "").split(","),
+  ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+  "http://localhost:3000",
+  "https://lohnai.vercel.app",
+]
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter((origin) => origin.length > 0));
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    const normalizedOrigin = origin?.replace(/\/$/, "");
+
+    if (!normalizedOrigin || allowedOrigins.has(normalizedOrigin)) {
+      callback(null, true);
+      return;
+    }
+
+    logger.warn(`CORS blocked for origin: ${origin}`, {
+      allowedOrigins: Array.from(allowedOrigins),
+      requestedOrigin: origin,
+    });
+
+    callback(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 app.use(compression());
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
@@ -73,7 +100,9 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ─── API Routes ──────────────────────────────────────────────────────────────
 app.use("/api/users", userRoutes);
 app.use("/api/admin/blog", blogRoutes);
-app.use("/api/assistant", assistantRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/email", emailRoutes);
+app.use("/api/testing", testingRoutes);
 
 // ─── Global Error Handlers ───────────────────────────────────────────────────
 Sentry.setupExpressErrorHandler(app);

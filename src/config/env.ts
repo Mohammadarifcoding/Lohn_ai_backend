@@ -40,10 +40,8 @@ const EnvSchema = z.object({
   CORS_ORIGIN: z.url().default("http://localhost:3000"),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
-  OPENAI_API_KEY: z.string().trim().min(1, "OPENAI_API_KEY is required"),
   PINECONE_API_KEY: z.string().trim().min(1, "PINECONE_API_KEY is required"),
   PINECONE_INDEX: z.string().trim().min(1, "PINECONE_INDEX is required"),
-  GEMINI_API_KEY: z.string().trim().min(1, "GEMINI_API_KEY is required"),
   AI_GATEWAY_URL: z.url(),
   OPENROUTER_API_KEY: z.string().trim().min(1, "OPENROUTER_API_KEY is required"),
   TAVILY_API_KEY: z.string().trim().min(1, "TAVILY_API_KEY is required"),
@@ -54,6 +52,8 @@ const EnvSchema = z.object({
   TRIGGER_PROJECT_REF: z.string().trim().min(1).optional(),
   TRIGGER_USE_QUEUE: z.preprocess(parseBoolean, z.boolean().default(false)),
   BLOG_RESEARCH_CACHE_ENABLED: z.preprocess(parseBoolean, z.boolean().default(false)),
+  RESEND_API_KEY: z.string().trim().min(1, "RESEND_API_KEY is required"),
+  SENTRY_DSN: z.string().trim().url().optional(),
 });
 
 export type ValidatedEnv = z.infer<typeof EnvSchema>;

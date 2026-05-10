@@ -1,11 +1,18 @@
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;
+  public readonly reportToSentry: boolean;
 
-  constructor(message: string, statusCode: number, isOperational = true) {
+  constructor(
+    message: string,
+    statusCode: number,
+    isOperational = true,
+    reportToSentry = statusCode >= 500,
+  ) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
+    this.reportToSentry = reportToSentry;
     Object.setPrototypeOf(this, AppError.prototype);
     Error.captureStackTrace(this, this.constructor);
   }
@@ -19,13 +26,13 @@ export class BadRequestError extends AppError {
 
 export class UnauthorizedError extends AppError {
   constructor(message = "Unauthorized") {
-    super(message, 401);
+    super(message, 401, true, true);
   }
 }
 
 export class ForbiddenError extends AppError {
   constructor(message = "Forbidden") {
-    super(message, 403);
+    super(message, 403, true, true);
   }
 }
 

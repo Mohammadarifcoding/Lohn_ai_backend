@@ -10,10 +10,8 @@ interface Config {
   BETTER_AUTH_URL: string;
   RATE_LIMIT_WINDOW_MS: number;
   RATE_LIMIT_MAX: number;
-  OPENAI_API_KEY: string;
   PINECONE_API_KEY: string;
   PINECONE_INDEX: string;
-  GEMINI_API_KEY: string;
   AI_GATEWAY_URL: string;
   OPENROUTER_API_KEY: string;
   TAVILY_API_KEY: string;
@@ -22,6 +20,7 @@ interface Config {
   ADMIN_PASSWORD: string;
   TRIGGER_SECRET_KEY?: string;
   BLOG_RESEARCH_CACHE_ENABLED: boolean;
+  RESEND_API_KEY: string;
 }
 
 export const config: Config = {
@@ -32,10 +31,8 @@ export const config: Config = {
   BETTER_AUTH_URL: env.BETTER_AUTH_URL,
   RATE_LIMIT_WINDOW_MS: env.RATE_LIMIT_WINDOW_MS,
   RATE_LIMIT_MAX: env.RATE_LIMIT_MAX,
-  OPENAI_API_KEY: env.OPENAI_API_KEY,
   PINECONE_API_KEY: env.PINECONE_API_KEY,
   PINECONE_INDEX: env.PINECONE_INDEX,
-  GEMINI_API_KEY: env.GEMINI_API_KEY,
   AI_GATEWAY_URL: env.AI_GATEWAY_URL,
   OPENROUTER_API_KEY: env.OPENROUTER_API_KEY,
   TAVILY_API_KEY: env.TAVILY_API_KEY,
@@ -44,6 +41,7 @@ export const config: Config = {
   ADMIN_PASSWORD: env.ADMIN_PASSWORD,
   TRIGGER_SECRET_KEY: env.TRIGGER_SECRET_KEY,
   BLOG_RESEARCH_CACHE_ENABLED: env.BLOG_RESEARCH_CACHE_ENABLED,
+  RESEND_API_KEY: env.RESEND_API_KEY,
 };
 
 export const isDev = config.NODE_ENV === "development";
