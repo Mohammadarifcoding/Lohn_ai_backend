@@ -18,7 +18,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://lohnai.vercel.app"
+          "value": "https://lohnai.com"
         },
         {
           "key": "Access-Control-Allow-Credentials",

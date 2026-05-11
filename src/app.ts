@@ -35,6 +35,7 @@ const allowedOrigins = new Set([
   ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
   "http://localhost:3000",
   "https://lohnai.vercel.app",
+  "https://lohnai.com",
 ]
   .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter((origin) => origin.length > 0));
